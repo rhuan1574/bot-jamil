@@ -1,0 +1,18 @@
+{
+  "name": "bot-jamil",
+  "version": "1.0.0",
+  "description": "Bot para gerenciamento de pagamentos e Farm",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "tesseract.js": "^5.0.4",
+    "node-schedule": "^2.1.1"
+  }
+}
