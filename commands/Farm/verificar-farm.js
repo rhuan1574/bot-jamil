@@ -33,11 +33,19 @@ module.exports = {
             const { data: { text } } = await worker.recognize(prova.url);
             await worker.terminate();
 
-            // Expressão regular para encontrar apenas números
+            // Expressão regular para encontrar o valor igual ao informado em meta
             let valorExtraido = 'Não encontrado';
-            const numeroMatch = text.match(/\d+[\d.,]*/);
+            // Remove possíveis sufixos como 'M' e formata para comparar apenas números
+            const metaNumerica = meta.replace(/[^\d.,]/g, '');
+            const regexMeta = new RegExp(metaNumerica.replace(/\./g, '\\.').replace(/,/g, '[.,]?'));
+            const numeroMatch = text.match(/\d+[\d.,]*/g);
             if (numeroMatch) {
-                valorExtraido = numeroMatch[0];
+                for (const numero of numeroMatch) {
+                    if (regexMeta.test(numero)) {
+                        valorExtraido = numero;
+                        break;
+                    }
+                }
             }
             const moedaMatch = text.match(/REAIS|REAL|R\$|DINHEIRO/i);
             let moedaExtraida = moedaMatch ? moedaMatch[0] : '';
@@ -48,7 +56,7 @@ module.exports = {
                 .setColor('#FFA500')
                 .addFields(
                     { name: '👤 Jogador', value: interaction.user.toString(), inline: true },
-                    { name: '🎯 Meta', value: `${meta}M`, inline: true },
+                    { name: '🎯 Meta', value: `${meta}`, inline: true },
                     { name: '💵 Valor Detectado!!!', value: `${valorExtraido} ${moedaExtraida}`, inline: true },
                     { name: '📝 Texto Reconhecido', value: text.substring(0, 1000) || 'Nenhum texto reconhecido' }
                 )
