@@ -1,5 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { createWorker } = require('tesseract.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,46 +25,42 @@ module.exports = {
                 return interaction.editReply('❌ Por favor, envie uma imagem válida como prova.');
             }
 
-            // Inicia o worker do Tesseract para OCR
-            const worker = await createWorker('por');
-            const { data: { text } } = await worker.recognize(prova.url);
-            await worker.terminate();
-
-            // Expressão regular para encontrar o valor igual ao informado em meta
-            let valorExtraido = 'Não encontrado';
-            // Remove possíveis sufixos como 'M' e formata para comparar apenas números
-            const metaNumerica = meta.replace(/[^\d.,]/g, '');
-            const regexMeta = new RegExp(metaNumerica.replace(/\./g, '\\.').replace(/,/g, '[.,]?'));
-            const numeroMatch = text.match(/\d+[\d.,]*/g);
-            if (numeroMatch) {
-                for (const numero of numeroMatch) {
-                    if (regexMeta.test(numero)) {
-                        valorExtraido = numero;
-                        break;
-                    }
-                }
-            }
-            const moedaMatch = text.match(/REAIS|REAL|R\$|DINHEIRO/i);
-            let moedaExtraida = moedaMatch ? moedaMatch[0] : '';
-
-            // Cria o embed com as informações
+            // Cria o embed
             const embed = new EmbedBuilder()
                 .setTitle('🌾 Verificação de Farm')
                 .setColor('#FFA500')
                 .addFields(
                     { name: '👤 Jogador', value: interaction.user.toString(), inline: true },
                     { name: '🎯 Meta', value: `${meta}`, inline: true },
-                    { name: '💵 Valor Detectado!!!', value: `${valorExtraido} ${moedaExtraida}`, inline: true },
-                    { name: '📝 Texto Reconhecido', value: text.substring(0, 1000) || 'Nenhum texto reconhecido' }
+                    { name: '💵 Valor Detectado!!!', value: 'OCR desativado', inline: true },
+                    { name: '📝 Texto Reconhecido', value: 'Reconhecimento de texto desativado.' }
                 )
                 .setImage(prova.url)
                 .setTimestamp();
 
-            // Envia a confirmação
-            await interaction.editReply({
-                content: '✅ Farm verificado com sucesso!',
-                embeds: [embed]
-            });
+            // Cria os botões
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('dinheiro')
+                    .setLabel('Dinheiro')
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId('farm')
+                    .setLabel('Farm')
+                    .setStyle(ButtonStyle.Success)
+            );
+
+            // Envia a confirmação com os botões na DM do usuário
+            try {
+                await interaction.user.send({
+                    content: 'Escolha uma opção:',
+                    embeds: [embed],
+                    components: [row]
+                });
+                await interaction.editReply('✅ Verificação enviada na sua DM!');
+            } catch (dmError) {
+                await interaction.editReply('❌ Não foi possível enviar a DM. Verifique se suas DMs estão abertas.');
+            }
 
         } catch (error) {
             console.error(error);
