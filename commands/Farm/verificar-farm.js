@@ -33,11 +33,17 @@ module.exports = {
             const { data: { text } } = await worker.recognize(prova.url);
             await worker.terminate();
 
-            // Expressão regular para encontrar padrões como '50000x' e 'REAIS'
-            const valorMatch = text.match(/([\d.,]+)x?/i);
+            // Expressão regular melhorada para encontrar padrões como '50000x', mesmo com espaços
+            let valorExtraido = 'Não encontrado';
+            const linhas = text.split(/\r?\n/);
+            for (const linha of linhas) {
+                const match = linha.match(/([\d.,]+)\s*x/i);
+                if (match) {
+                    valorExtraido = match[0].replace(/\s+/g, '');
+                    break;
+                }
+            }
             const moedaMatch = text.match(/REAIS|REAL|R\$|DINHEIRO/i);
-
-            let valorExtraido = valorMatch ? valorMatch[0] : 'Não encontrado';
             let moedaExtraida = moedaMatch ? moedaMatch[0] : 'Não encontrado';
 
             // Cria o embed com as informações
