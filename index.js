@@ -4,8 +4,15 @@ const { Token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
 
-// Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Create a new client instance with all necessary intents
+const client = new Client({ 
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers
+	] 
+});
 client.commands = new Collection();
 client.cooldowns = new Collection();
 

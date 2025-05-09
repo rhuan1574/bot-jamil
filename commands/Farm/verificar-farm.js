@@ -33,6 +33,13 @@ module.exports = {
             const { data: { text } } = await worker.recognize(prova.url);
             await worker.terminate();
 
+            // Expressão regular para encontrar padrões como '50000x' e 'REAIS'
+            const valorMatch = text.match(/([\d.,]+)x?/i);
+            const moedaMatch = text.match(/REAIS|REAL|R\$|DINHEIRO/i);
+
+            let valorExtraido = valorMatch ? valorMatch[0] : 'Não encontrado';
+            let moedaExtraida = moedaMatch ? moedaMatch[0] : 'Não encontrado';
+
             // Cria o embed com as informações
             const embed = new EmbedBuilder()
                 .setTitle('🌾 Verificação de Farm')
@@ -40,6 +47,7 @@ module.exports = {
                 .addFields(
                     { name: '👤 Jogador', value: interaction.user.toString(), inline: true },
                     { name: '🎯 Meta', value: `${meta}M`, inline: true },
+                    { name: '💵 Valor Detectado', value: `${valorExtraido} ${moedaExtraida}`, inline: true },
                     { name: '📝 Texto Reconhecido', value: text.substring(0, 1000) || 'Nenhum texto reconhecido' }
                 )
                 .setImage(prova.url)
