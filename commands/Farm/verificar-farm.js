@@ -28,8 +28,6 @@ module.exports = {
 
             // Inicia o worker do Tesseract para OCR
             const worker = await createWorker('por');
-            
-            // Faz o reconhecimento do texto na imagem
             const { data: { text } } = await worker.recognize(prova.url);
             await worker.terminate();
 
