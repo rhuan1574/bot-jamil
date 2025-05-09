@@ -53,7 +53,7 @@ module.exports = {
                 .addFields(
                     { name: '👤 Jogador', value: interaction.user.toString(), inline: true },
                     { name: '🎯 Meta', value: `${meta}M`, inline: true },
-                    { name: '💵 Valor Detectado', value: `${valorExtraido} ${moedaExtraida}`, inline: true },
+                    { name: '💵 Valor Detectado!!!', value: `${valorExtraido} ${moedaExtraida}`, inline: true },
                     { name: '📝 Texto Reconhecido', value: text.substring(0, 1000) || 'Nenhum texto reconhecido' }
                 )
                 .setImage(prova.url)
