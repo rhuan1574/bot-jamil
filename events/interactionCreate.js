@@ -177,12 +177,23 @@ module.exports = {
 					const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
 					const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
 
+					// Criar botão para upload do comprovante
+					const buttonComprovante = new ButtonBuilder()
+						.setCustomId("upload-comprovante")
+						.setLabel("Enviar Comprovante")
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji("��");
+
+					const row = new ActionRowBuilder()
+						.addComponents(buttonComprovante);
+
 					// Atualizar ou inicializar valores diários
 					const depositosAtuais = depositosDiarios.get(userId) || {
 						plastico: 0,
 						seda: 0,
 						folha: 0,
-						cascaSemente: 0
+						cascaSemente: 0,
+						comprovanteEnviado: false
 					};
 
 					depositosAtuais.plastico += plastico;
@@ -203,7 +214,7 @@ module.exports = {
 					// Criar embed de confirmação com progresso
 					const embedConfirmacao = new EmbedBuilder()
 						.setTitle("✅ Itens Registrados com Sucesso!")
-						.setDescription("Seus itens foram registrados no sistema.")
+						.setDescription("Seus itens foram registrados no sistema. **Por favor, envie o comprovante clicando no botão abaixo.**")
 						.addFields(
 							{ 
 								name: "🧪 Plástico", 
@@ -244,7 +255,8 @@ module.exports = {
 					}
 
 					await interaction.reply({ 
-						embeds: [embedConfirmacao], 
+						embeds: [embedConfirmacao],
+						components: [row],
 						ephemeral: true 
 					});
 
@@ -296,6 +308,31 @@ module.exports = {
 								ephemeral: true 
 							});
 						}
+
+						// Notificar gerentes
+						const embedNotificacao = new EmbedBuilder()
+							.setTitle("⚠️ Meta Não Atingida")
+							.setDescription(`O usuário ${interaction.user} não atingiu a meta diária.`)
+							.addFields(
+								{
+									name: "📊 Progresso",
+									value: `Plástico: ${depositosAtuais.plastico}/${metas.plastico}\nSeda: ${depositosAtuais.seda}/${metas.seda}\nFolha: ${depositosAtuais.folha}/${metas.folha}\nCasca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
+								}
+							)
+							.setColor("#FF0000")
+							.setTimestamp();
+
+						// Encontrar canal de notificação para gerentes
+						const canalNotificacao = interaction.guild.channels.cache.find(
+							channel => channel.name === "notificacoes-gerentes"
+						);
+
+						if (canalNotificacao) {
+							await canalNotificacao.send({ 
+								content: "<@&ID_DO_CARGO_GERENTE>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
+								embeds: [embedNotificacao] 
+							});
+						}
 					}
 
 				} catch (error) {
@@ -303,6 +340,72 @@ module.exports = {
 					await interaction.reply({ 
 						content: "❌ Ocorreu um erro ao processar seus dados!", 
 						ephemeral: true 
+					});
+				}
+			}
+		}
+
+		// Tratamento do botão de upload de comprovante
+		if (interaction.isButton() && interaction.customId === "upload-comprovante") {
+			const modalComprovante = new ModalBuilder()
+				.setCustomId("modal-comprovante")
+				.setTitle("📸 Enviar Comprovante");
+
+			const inputComprovante = new TextInputBuilder()
+				.setCustomId("link-comprovante")
+				.setLabel("Link do Comprovante")
+				.setPlaceholder("Cole aqui o link da imagem do comprovante")
+				.setStyle(TextInputStyle.Paragraph)
+				.setRequired(true);
+
+			const row = new ActionRowBuilder().addComponents(inputComprovante);
+			modalComprovante.addComponents(row);
+
+			await interaction.showModal(modalComprovante);
+		}
+
+		// Tratamento do modal de comprovante
+		if (interaction.isModalSubmit() && interaction.customId === "modal-comprovante") {
+			const linkComprovante = interaction.fields.getTextInputValue("link-comprovante");
+			const userId = interaction.user.id;
+			const depositosAtuais = depositosDiarios.get(userId);
+
+			if (depositosAtuais) {
+				depositosAtuais.comprovanteEnviado = true;
+				depositosDiarios.set(userId, depositosAtuais);
+
+				const embedComprovante = new EmbedBuilder()
+					.setTitle("✅ Comprovante Recebido")
+					.setDescription("Seu comprovante foi registrado com sucesso!")
+					.addFields(
+						{ name: "📸 Comprovante", value: linkComprovante }
+					)
+					.setColor("#00FF00")
+					.setTimestamp();
+
+				await interaction.reply({ 
+					embeds: [embedComprovante], 
+					ephemeral: true 
+				});
+
+				// Notificar gerentes sobre o comprovante
+				const embedNotificacaoComprovante = new EmbedBuilder()
+					.setTitle("📸 Novo Comprovante")
+					.setDescription(`O usuário ${interaction.user} enviou um comprovante.`)
+					.addFields(
+						{ name: "🔗 Link do Comprovante", value: linkComprovante }
+					)
+					.setColor("#00FF00")
+					.setTimestamp();
+
+				const canalNotificacao = interaction.guild.channels.cache.find(
+					channel => channel.name === "notificacoes-gerentes"
+				);
+
+				if (canalNotificacao) {
+					await canalNotificacao.send({ 
+						content: "<@&ID_DO_CARGO_GERENTE>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
+						embeds: [embedNotificacaoComprovante] 
 					});
 				}
 			}
