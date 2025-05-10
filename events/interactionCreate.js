@@ -24,6 +24,59 @@ setInterval(() => {
 	}
 }, 60000); // Verifica a cada minuto
 
+// Função para processar o comprovante enviado no privado
+const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, deleteDelay = 60000) => {
+	let linkComprovante = null;
+	let embedMetaComprovante;
+	if (msg.attachments.size > 0) {
+		linkComprovante = msg.attachments.first().url;
+		embedMetaComprovante = new EmbedBuilder()
+			.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+			.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+			.addFields(
+				{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
+				{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
+				{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
+				{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` }
+			)
+			.setImage(linkComprovante)
+			.setColor("#00FF00")
+			.setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+			.setTimestamp();
+	} else {
+		linkComprovante = msg.content;
+		embedMetaComprovante = new EmbedBuilder()
+			.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+			.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+			.addFields(
+				{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
+				{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
+				{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
+				{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` },
+				{ name: "📸 Comprovante", value: linkComprovante }
+			)
+			.setColor("#00FF00")
+			.setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+			.setTimestamp();
+	}
+
+	// Envia confirmações e registros
+	const canalLogs = interaction.guild.channels.cache.find(
+		channel => channel.name === "logs-farm"
+	);
+	const canalNotificacao = interaction.guild.channels.cache.find(
+		channel => channel.name === "notificacoes-gerentes"
+	);
+	await Promise.all([
+		msg.channel.send({ content: "Imagem/link recebido com sucesso!", embeds: [embedMetaComprovante] }),
+		canalLogs ? canalLogs.send({ embeds: [embedMetaComprovante] }) : null,
+		canalNotificacao ? canalNotificacao.send({ content: "<@&1370136458278604822>", embeds: [embedMetaComprovante] }) : null
+	]);
+
+	// Agenda a deleção da mensagem do comprovante
+	setTimeout(() => msg.delete().catch(() => {}), deleteDelay);
+};
+
 module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
@@ -255,14 +308,8 @@ module.exports = {
 
 						if (collected && collected.size > 0) {
 							const msg = collected.first();
-							let linkComprovante = null;
-							if (msg.attachments.size > 0) {
-								linkComprovante = msg.attachments.first().url;
-							} else {
-								linkComprovante = msg.content;
-							}
 							depositosAtuais.comprovanteEnviado = true;
-							depositosAtuais.linkComprovante = linkComprovante;
+							depositosAtuais.linkComprovante = msg.attachments.size > 0 ? msg.attachments.first().url : msg.content;
 							depositosDiarios.set(userId, depositosAtuais);
 
 							// Verifica se todas as metas foram atingidas
@@ -273,57 +320,19 @@ module.exports = {
 								depositosAtuais.cascaSemente >= metas.cascaSemente;
 
 							if (todasMetasAtingidas) {
-								// Enviar embed de meta atingida com o comprovante
-								const embedMetaComprovante = new EmbedBuilder()
-									.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
-									.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
-									.addFields(
-										{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
-										{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
-										{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
-										{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` },
-										{ name: "📸 Comprovante", value: linkComprovante }
-									)
-									.setColor("#00FF00")
-									.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
-									.setTimestamp();
-
-								// Log
-								const canalLogs = interaction.guild.channels.cache.find(
-									channel => channel.name === "logs-farm"
-								);
-								if (canalLogs) {
-									await canalLogs.send({ embeds: [embedMetaComprovante] });
-								}
-
-								// Notificar gerentes
-								const canalNotificacao = interaction.guild.channels.cache.find(
-									channel => channel.name === "notificacoes-gerentes"
-								);
-								if (canalNotificacao) {
-									await canalNotificacao.send({ 
-										content: "<@&1370136458278604822>",
-										embeds: [embedMetaComprovante] 
-									});
-								}
-
-								// Mensagem privada para o usuário
-								try {
-									await dm.send({ embeds: [embedMetaComprovante] });
-								} catch (error) {
-									console.error('Erro ao enviar mensagem privada:', error);
-								}
+								await handleComprovanteFarm(msg, interaction, depositosAtuais, metas, 60000);
 							} else {
 								// Se não atingiu a meta, só confirma o recebimento do comprovante
 								const embedComprovante = new EmbedBuilder()
 									.setTitle("✅ Comprovante Recebido")
 									.setDescription("Seu comprovante foi registrado com sucesso!")
 									.addFields(
-										{ name: "📸 Comprovante", value: linkComprovante }
+										{ name: "📸 Comprovante", value: depositosAtuais.linkComprovante }
 									)
 									.setColor("#00FF00")
 									.setTimestamp();
 								await dm.send({ embeds: [embedComprovante] });
+								setTimeout(() => msg.delete().catch(() => {}), 60000);
 							}
 						} else {
 							// Se não enviou comprovante em 2 minutos
