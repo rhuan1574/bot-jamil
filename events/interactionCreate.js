@@ -152,6 +152,24 @@ module.exports = {
 						await interaction.showModal(modalFarm);
 						break;
 
+					case "upload-comprovante":
+						const modalComprovante = new ModalBuilder()
+							.setCustomId("modal-comprovante")
+							.setTitle("📸 Enviar Comprovante");
+
+						const inputComprovante = new TextInputBuilder()
+							.setCustomId("link-comprovante")
+							.setLabel("Link do Comprovante")
+							.setPlaceholder("Cole aqui o link da imagem do comprovante")
+							.setStyle(TextInputStyle.Paragraph)
+							.setRequired(true);
+
+						const row = new ActionRowBuilder().addComponents(inputComprovante);
+						modalComprovante.addComponents(row);
+
+						await interaction.showModal(modalComprovante);
+						break;
+
 					default:
 						await interaction.reply({ 
 							content: "❌ Opção inválida!", 
@@ -422,25 +440,6 @@ module.exports = {
 					});
 				}
 			}
-		}
-
-		// Tratamento do botão de upload de comprovante
-		if (interaction.isButton() && interaction.customId === "upload-comprovante") {
-			const modalComprovante = new ModalBuilder()
-				.setCustomId("modal-comprovante")
-				.setTitle("📸 Enviar Comprovante");
-
-			const inputComprovante = new TextInputBuilder()
-				.setCustomId("link-comprovante")
-				.setLabel("Link do Comprovante")
-				.setPlaceholder("Cole aqui o link da imagem do comprovante")
-				.setStyle(TextInputStyle.Paragraph)
-				.setRequired(true);
-
-			const row = new ActionRowBuilder().addComponents(inputComprovante);
-			modalComprovante.addComponents(row);
-
-			await interaction.showModal(modalComprovante);
 		}
 
 		// Tratamento do modal de comprovante
