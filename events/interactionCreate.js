@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -69,7 +69,14 @@ module.exports = {
 							.setFooter({ text: "Sistema de Registro de Farms" })
 							.setTimestamp();
 
-						await interaction.reply({ embeds: [embedFarm], ephemeral: true });
+							const buttonFarm = new ButtonBuilder()
+							.setCustomId("info-farm")
+							.setLabel("Depositar")
+							.setStyle(ButtonStyle.Success);
+
+							const row = new ActionRowBuilder().addComponents(buttonFarm)
+
+						await interaction.reply({ embeds: [embedFarm],components: [row], ephemeral: true });
 						break;
 
 					default:
