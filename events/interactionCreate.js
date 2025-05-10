@@ -182,7 +182,7 @@ module.exports = {
 						.setCustomId("upload-comprovante")
 						.setLabel("Enviar Comprovante")
 						.setStyle(ButtonStyle.Primary)
-						.setEmoji("��");
+						.setEmoji("📸");
 
 					const row = new ActionRowBuilder()
 						.addComponents(buttonComprovante);
