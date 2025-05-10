@@ -252,6 +252,86 @@ module.exports = {
 						embedConfirmacao
 							.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
 							.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.");
+
+						// Enviar log de meta atingida
+						const embedLogMeta = new EmbedBuilder()
+							.setTitle("🎯 Meta Diária Atingida")
+							.setDescription(`O usuário ${interaction.user} atingiu todas as metas diárias!`)
+							.addFields(
+								{
+									name: "📊 Itens Entregues",
+									value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
+								},
+								{
+									name: "⏰ Horário",
+									value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+								}
+							)
+							.setColor("#00FF00")
+							.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
+							.setTimestamp();
+
+						// Encontrar canal de logs
+						const canalLogs = interaction.guild.channels.cache.find(
+							channel => channel.name === "logs-farm"
+						);
+
+						if (canalLogs) {
+							await canalLogs.send({ embeds: [embedLogMeta] });
+						}
+
+						// Notificar gerentes sobre meta atingida
+						const embedNotificacaoMeta = new EmbedBuilder()
+							.setTitle("🎯 Meta Diária Concluída")
+							.setDescription(`O usuário ${interaction.user} atingiu todas as metas diárias!`)
+							.addFields(
+								{
+									name: "📊 Itens Entregues",
+									value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
+								},
+								{
+									name: "⏰ Horário",
+									value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+								}
+							)
+							.setColor("#00FF00")
+							.setFooter({ text: "Sistema de Farm" })
+							.setTimestamp();
+
+						const canalNotificacao = interaction.guild.channels.cache.find(
+							channel => channel.name === "notificacoes-gerentes"
+						);
+
+						if (canalNotificacao) {
+							await canalNotificacao.send({ 
+								content: "<@&1370136458278604822>",
+								embeds: [embedNotificacaoMeta] 
+							});
+						}
+
+						// Enviar mensagem privada para o usuário
+						try {
+							const embedPrivado = new EmbedBuilder()
+								.setTitle("🎉 Parabéns! Meta Concluída!")
+								.setDescription("Você atingiu todas as metas diárias! Aqui está um resumo do seu progresso:")
+								.addFields(
+									{
+										name: "📊 Seus Itens Entregues",
+										value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
+									},
+									{
+										name: "⏰ Próximo Reset",
+										value: "Os valores serão resetados à meia-noite."
+									}
+								)
+								.setColor("#00FF00")
+								.setFooter({ text: "Sistema de Farm" })
+								.setTimestamp();
+
+							await interaction.user.send({ embeds: [embedPrivado] });
+						} catch (error) {
+							console.error('Erro ao enviar mensagem privada:', error);
+						}
 					}
 
 					await interaction.reply({ 
@@ -329,7 +409,7 @@ module.exports = {
 
 						if (canalNotificacao) {
 							await canalNotificacao.send({ 
-								content: "<@&ID_DO_CARGO_GERENTE>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
+								content: "<@&1370136458278604822>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
 								embeds: [embedNotificacao] 
 							});
 						}
@@ -388,14 +468,27 @@ module.exports = {
 					ephemeral: true 
 				});
 
+				// Verificar se todas as metas foram atingidas para o log
+				const todasMetasAtingidas = 
+					depositosAtuais.plastico >= metas.plastico &&
+					depositosAtuais.seda >= metas.seda &&
+					depositosAtuais.folha >= metas.folha &&
+					depositosAtuais.cascaSemente >= metas.cascaSemente;
+
 				// Notificar gerentes sobre o comprovante
 				const embedNotificacaoComprovante = new EmbedBuilder()
 					.setTitle("📸 Novo Comprovante")
 					.setDescription(`O usuário ${interaction.user} enviou um comprovante.`)
 					.addFields(
-						{ name: "🔗 Link do Comprovante", value: linkComprovante }
+						{ name: "🔗 Link do Comprovante", value: linkComprovante },
+						{ 
+							name: "📊 Status das Metas", 
+							value: todasMetasAtingidas 
+								? "✅ Todas as metas foram atingidas!" 
+								: "⚠️ Metas ainda não atingidas"
+						}
 					)
-					.setColor("#00FF00")
+					.setColor(todasMetasAtingidas ? "#00FF00" : "#FFA500")
 					.setTimestamp();
 
 				const canalNotificacao = interaction.guild.channels.cache.find(
@@ -404,9 +497,38 @@ module.exports = {
 
 				if (canalNotificacao) {
 					await canalNotificacao.send({ 
-						content: "<@&ID_DO_CARGO_GERENTE>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
+						content: "<@&ID_DO_CARGO_GERENTE>",
 						embeds: [embedNotificacaoComprovante] 
 					});
+				}
+
+				// Enviar log do comprovante
+				const embedLogComprovante = new EmbedBuilder()
+					.setTitle("📸 Comprovante Registrado")
+					.setDescription(`O usuário ${interaction.user} enviou um comprovante.`)
+					.addFields(
+						{ name: "🔗 Link do Comprovante", value: linkComprovante },
+						{ 
+							name: "📊 Status das Metas", 
+							value: todasMetasAtingidas 
+								? "✅ Todas as metas foram atingidas!" 
+								: "⚠️ Metas ainda não atingidas"
+						},
+						{
+							name: "⏰ Horário",
+							value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+						}
+					)
+					.setColor(todasMetasAtingidas ? "#00FF00" : "#FFA500")
+					.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
+					.setTimestamp();
+
+				const canalLogs = interaction.guild.channels.cache.find(
+					channel => channel.name === "logs-farm"
+				);
+
+				if (canalLogs) {
+					await canalLogs.send({ embeds: [embedLogComprovante] });
 				}
 			}
 		}
