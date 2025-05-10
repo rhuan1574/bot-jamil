@@ -247,6 +247,57 @@ module.exports = {
 						embeds: [embedConfirmacao], 
 						ephemeral: true 
 					});
+
+					// Enviar mensagem privada com o que falta
+					if (!todasMetasAtingidas) {
+						const embedFaltante = new EmbedBuilder()
+							.setTitle("📊 Progresso das Metas")
+							.setDescription("Ainda faltam itens para completar as metas diárias:")
+							.addFields(
+								{
+									name: "🧪 Plástico",
+									value: depositosAtuais.plastico >= metas.plastico 
+										? "✅ Meta atingida!" 
+										: `Faltam ${metas.plastico - depositosAtuais.plastico} unidades`,
+									inline: true
+								},
+								{
+									name: "📄 Seda",
+									value: depositosAtuais.seda >= metas.seda 
+										? "✅ Meta atingida!" 
+										: `Faltam ${metas.seda - depositosAtuais.seda} unidades`,
+									inline: true
+								},
+								{
+									name: "🍃 Folha",
+									value: depositosAtuais.folha >= metas.folha 
+										? "✅ Meta atingida!" 
+										: `Faltam ${metas.folha - depositosAtuais.folha} unidades`,
+									inline: true
+								},
+								{
+									name: "🌱 Casca de Semente",
+									value: depositosAtuais.cascaSemente >= metas.cascaSemente 
+										? "✅ Meta atingida!" 
+										: `Faltam ${metas.cascaSemente - depositosAtuais.cascaSemente} unidades`,
+									inline: true
+								}
+							)
+							.setColor("#FFA500")
+							.setFooter({ text: "Lembre-se: Os valores são resetados à meia-noite" })
+							.setTimestamp();
+
+						try {
+							await interaction.user.send({ embeds: [embedFaltante] });
+						} catch (error) {
+							console.error('Erro ao enviar mensagem privada:', error);
+							await interaction.followUp({ 
+								content: "⚠️ Não foi possível enviar a mensagem privada. Verifique se você tem as mensagens diretas habilitadas.", 
+								ephemeral: true 
+							});
+						}
+					}
+
 				} catch (error) {
 					console.error('Erro ao processar modal:', error);
 					await interaction.reply({ 
