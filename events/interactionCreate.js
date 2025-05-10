@@ -99,12 +99,12 @@ module.exports = {
 							.setStyle(ButtonStyle.Success)
 							.setEmoji("📥");
 
-						const row = new ActionRowBuilder()
+						const rowFarm = new ActionRowBuilder()
 							.addComponents(buttonFarm);
 
 						await interaction.reply({ 
 							embeds: [embedFarm],
-							components: [row], 
+							components: [rowFarm], 
 							ephemeral: true 
 						});
 						break;
@@ -164,8 +164,8 @@ module.exports = {
 							.setStyle(TextInputStyle.Paragraph)
 							.setRequired(true);
 
-						const row = new ActionRowBuilder().addComponents(inputComprovante);
-						modalComprovante.addComponents(row);
+						const rowComprovante = new ActionRowBuilder().addComponents(inputComprovante);
+						modalComprovante.addComponents(rowComprovante);
 
 						await interaction.showModal(modalComprovante);
 						break;
@@ -201,7 +201,7 @@ module.exports = {
 						.setLabel("Enviar Comprovante")
 						.setStyle(ButtonStyle.Primary);
 
-					const row = new ActionRowBuilder()
+					const rowUpload = new ActionRowBuilder()
 						.addComponents(buttonComprovante);
 
 					// Atualizar ou inicializar valores diários
@@ -353,7 +353,7 @@ module.exports = {
 
 					await interaction.reply({ 
 						embeds: [embedConfirmacao],
-						components: [row],
+						components: [rowUpload],
 						ephemeral: true 
 					});
 
