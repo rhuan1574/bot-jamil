@@ -34,7 +34,7 @@ module.exports = {
 		}
 
 		if(interaction.isButton()) {
-			const customId = interaction
+			const {customId} = interaction;
 			if(customId === "button-dinheiro") {
 				const embed = new EmbedBuilder()
 				.setTitle("Será aceito somente transferencia")
