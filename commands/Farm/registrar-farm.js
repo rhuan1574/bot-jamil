@@ -17,7 +17,7 @@ module.exports = {
 
         const buttonDinheiro = new ButtonBuilder()
             .setCustomId("button-dinheiro")
-            .setLabel("Dinheiro")
+            .setLabel("Dinheiro!!")
             .setStyle(ButtonStyle.Success)
             .setEmoji("💵");
 
