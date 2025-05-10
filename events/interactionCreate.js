@@ -77,9 +77,18 @@ module.exports = {
 							const row = new ActionRowBuilder().addComponents(buttonFarm)
 
 						await interaction.reply({ embeds: [embedFarm],components: [row], ephemeral: true });
+							
+						break;
 
-						case "info-farm":
-							const modalFarm = new ModalBuilder()
+					default:
+						await interaction.reply({ 
+							content: "❌ Opção inválida!", 
+							ephemeral: true 
+						});
+				}
+
+				if(customId === "info-farm") {
+					const modalFarm = new ModalBuilder()
 							.setCustomId("modal-farm")
 							.setTitle("Coloque os itens do farm")
 							
@@ -106,13 +115,6 @@ module.exports = {
 							const rowModal = new ActionRowBuilder().addComponents(input1,input2,input3,input4)
 
 							modalFarm.addComponents(rowModal);
-						break;
-
-					default:
-						await interaction.reply({ 
-							content: "❌ Opção inválida!", 
-							ephemeral: true 
-						});
 				}
 			} catch (error) {
 				console.error('Erro ao processar interação do botão:', error);
