@@ -69,15 +69,63 @@ module.exports = {
 							.setFooter({ text: "Sistema de Registro de Farms" })
 							.setTimestamp();
 
-							const buttonFarm = new ButtonBuilder()
+						const buttonFarm = new ButtonBuilder()
 							.setCustomId("info-farm")
 							.setLabel("Depositar")
-							.setStyle(ButtonStyle.Success);
+							.setStyle(ButtonStyle.Success)
+							.setEmoji("📥");
 
-							const row = new ActionRowBuilder().addComponents(buttonFarm)
+						const row = new ActionRowBuilder()
+							.addComponents(buttonFarm);
 
-						await interaction.reply({ embeds: [embedFarm],components: [row], ephemeral: true });
-							
+						await interaction.reply({ 
+							embeds: [embedFarm],
+							components: [row], 
+							ephemeral: true 
+						});
+						break;
+
+					case "info-farm":
+						const modalFarm = new ModalBuilder()
+							.setCustomId("modal-farm")
+							.setTitle("📝 Registro de Itens do Farm");
+
+						const input1 = new TextInputBuilder()
+							.setCustomId("plastico")
+							.setLabel("Quantidade de Plástico")
+							.setPlaceholder("Digite a quantidade de plástico")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true);
+
+						const input2 = new TextInputBuilder()
+							.setCustomId("seda")
+							.setLabel("Quantidade de Seda")
+							.setPlaceholder("Digite a quantidade de seda")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true);
+
+						const input3 = new TextInputBuilder()
+							.setCustomId("folha")
+							.setLabel("Quantidade de Folha")
+							.setPlaceholder("Digite a quantidade de folha")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true);
+
+						const input4 = new TextInputBuilder()
+							.setCustomId("casca-de-semente")
+							.setLabel("Quantidade de Casca de Semente")
+							.setPlaceholder("Digite a quantidade de casca de semente")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true);
+
+						const row1 = new ActionRowBuilder().addComponents(input1);
+						const row2 = new ActionRowBuilder().addComponents(input2);
+						const row3 = new ActionRowBuilder().addComponents(input3);
+						const row4 = new ActionRowBuilder().addComponents(input4);
+
+						modalFarm.addComponents(row1, row2, row3, row4);
+
+						await interaction.showModal(modalFarm);
 						break;
 
 					default:
@@ -86,42 +134,48 @@ module.exports = {
 							ephemeral: true 
 						});
 				}
-
-				if(customId === "info-farm") {
-					const modalFarm = new ModalBuilder()
-							.setCustomId("modal-farm")
-							.setTitle("Coloque os itens do farm")
-							
-							const input1 = new TextInputBuilder()
-							.setCustomId("plastico")
-							.setLabel("Plástico")
-							.setStyle(TextInputStyle.Short)
-
-							const input2 = new TextInputBuilder()
-							.setCustomId("seda")
-							.setLabel("Seda")
-							.setStyle(TextInputStyle.Short)
-
-							const input3 = new TextInputBuilder()
-							.setCustomId("folha")
-							.setLabel("Folha")
-							.setStyle(TextInputStyle.Short)
-
-							const input4 = new TextInputBuilder()
-							.setCustomId("casca-de-semente")
-							.setLabel("Casca de Semente")
-							.setStyle(TextInputStyle.Short)
-
-							const rowModal = new ActionRowBuilder().addComponents(input1,input2,input3,input4)
-
-							modalFarm.addComponents(rowModal);
-				}
 			} catch (error) {
 				console.error('Erro ao processar interação do botão:', error);
 				await interaction.reply({ 
 					content: "❌ Ocorreu um erro ao processar sua solicitação!", 
 					ephemeral: true 
 				});
+			}
+		}
+
+		// Tratamento de modais
+		if (interaction.isModalSubmit()) {
+			if (interaction.customId === "modal-farm") {
+				try {
+					const plastico = interaction.fields.getTextInputValue("plastico");
+					const seda = interaction.fields.getTextInputValue("seda");
+					const folha = interaction.fields.getTextInputValue("folha");
+					const cascaSemente = interaction.fields.getTextInputValue("casca-de-semente");
+
+					const embedConfirmacao = new EmbedBuilder()
+						.setTitle("✅ Itens Registrados com Sucesso!")
+						.setDescription("Seus itens foram registrados no sistema.")
+						.addFields(
+							{ name: "🧪 Plástico", value: plastico, inline: true },
+							{ name: "📄 Seda", value: seda, inline: true },
+							{ name: "🍃 Folha", value: folha, inline: true },
+							{ name: "🌱 Casca de Semente", value: cascaSemente, inline: true }
+						)
+						.setColor("#00FF00")
+						.setFooter({ text: "Sistema de Registro de Farms" })
+						.setTimestamp();
+
+					await interaction.reply({ 
+						embeds: [embedConfirmacao], 
+						ephemeral: true 
+					});
+				} catch (error) {
+					console.error('Erro ao processar modal:', error);
+					await interaction.reply({ 
+						content: "❌ Ocorreu um erro ao processar seus dados!", 
+						ephemeral: true 
+					});
+				}
 			}
 		}
 	},
