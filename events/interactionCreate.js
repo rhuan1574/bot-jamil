@@ -1,5 +1,29 @@
 const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
+// Sistema de metas e controle diário
+const metas = {
+	cascaSemente: 120,
+	folha: 120,
+	seda: 120,
+	plastico: 40
+};
+
+// Armazenamento temporário dos valores diários
+let depositosDiarios = new Map();
+
+// Função para resetar os valores diários
+function resetarValoresDiarios() {
+	depositosDiarios.clear();
+}
+
+// Configurar reset diário (meia-noite)
+setInterval(() => {
+	const agora = new Date();
+	if (agora.getHours() === 0 && agora.getMinutes() === 0) {
+		resetarValoresDiarios();
+	}
+}, 60000); // Verifica a cada minuto
+
 module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
@@ -147,23 +171,77 @@ module.exports = {
 		if (interaction.isModalSubmit()) {
 			if (interaction.customId === "modal-farm") {
 				try {
-					const plastico = interaction.fields.getTextInputValue("plastico");
-					const seda = interaction.fields.getTextInputValue("seda");
-					const folha = interaction.fields.getTextInputValue("folha");
-					const cascaSemente = interaction.fields.getTextInputValue("casca-de-semente");
+					const userId = interaction.user.id;
+					const plastico = parseInt(interaction.fields.getTextInputValue("plastico")) || 0;
+					const seda = parseInt(interaction.fields.getTextInputValue("seda")) || 0;
+					const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
+					const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
 
+					// Atualizar ou inicializar valores diários
+					const depositosAtuais = depositosDiarios.get(userId) || {
+						plastico: 0,
+						seda: 0,
+						folha: 0,
+						cascaSemente: 0
+					};
+
+					depositosAtuais.plastico += plastico;
+					depositosAtuais.seda += seda;
+					depositosAtuais.folha += folha;
+					depositosAtuais.cascaSemente += cascaSemente;
+
+					depositosDiarios.set(userId, depositosAtuais);
+
+					// Calcular progresso
+					const progresso = {
+						plastico: (depositosAtuais.plastico / metas.plastico) * 100,
+						seda: (depositosAtuais.seda / metas.seda) * 100,
+						folha: (depositosAtuais.folha / metas.folha) * 100,
+						cascaSemente: (depositosAtuais.cascaSemente / metas.cascaSemente) * 100
+					};
+
+					// Criar embed de confirmação com progresso
 					const embedConfirmacao = new EmbedBuilder()
 						.setTitle("✅ Itens Registrados com Sucesso!")
 						.setDescription("Seus itens foram registrados no sistema.")
 						.addFields(
-							{ name: "🧪 Plástico", value: plastico, inline: true },
-							{ name: "📄 Seda", value: seda, inline: true },
-							{ name: "🍃 Folha", value: folha, inline: true },
-							{ name: "🌱 Casca de Semente", value: cascaSemente, inline: true }
+							{ 
+								name: "🧪 Plástico", 
+								value: `${depositosAtuais.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`,
+								inline: true 
+							},
+							{ 
+								name: "📄 Seda", 
+								value: `${depositosAtuais.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`,
+								inline: true 
+							},
+							{ 
+								name: "🍃 Folha", 
+								value: `${depositosAtuais.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`,
+								inline: true 
+							},
+							{ 
+								name: "🌱 Casca de Semente", 
+								value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`,
+								inline: true 
+							}
 						)
 						.setColor("#00FF00")
 						.setFooter({ text: "Sistema de Registro de Farms" })
 						.setTimestamp();
+
+					// Verificar se todas as metas foram atingidas
+					const todasMetasAtingidas = 
+						depositosAtuais.plastico >= metas.plastico &&
+						depositosAtuais.seda >= metas.seda &&
+						depositosAtuais.folha >= metas.folha &&
+						depositosAtuais.cascaSemente >= metas.cascaSemente;
+
+					if (todasMetasAtingidas) {
+						embedConfirmacao
+							.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+							.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.");
+					}
 
 					await interaction.reply({ 
 						embeds: [embedConfirmacao], 
