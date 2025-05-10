@@ -195,15 +195,6 @@ module.exports = {
 					const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
 					const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
 
-					// Criar botão para upload do comprovante
-					const buttonComprovante = new ButtonBuilder()
-						.setCustomId("upload-comprovante")
-						.setLabel("Enviar Comprovante")
-						.setStyle(ButtonStyle.Primary);
-
-					const rowUpload = new ActionRowBuilder()
-						.addComponents(buttonComprovante);
-
 					// Atualizar ou inicializar valores diários
 					const depositosAtuais = depositosDiarios.get(userId) || {
 						plastico: 0,
@@ -217,7 +208,8 @@ module.exports = {
 					depositosAtuais.seda += seda;
 					depositosAtuais.folha += folha;
 					depositosAtuais.cascaSemente += cascaSemente;
-
+					depositosAtuais.comprovanteEnviado = false;
+					depositosAtuais.linkComprovante = null;
 					depositosDiarios.set(userId, depositosAtuais);
 
 					// Calcular progresso
@@ -228,210 +220,118 @@ module.exports = {
 						cascaSemente: (depositosAtuais.cascaSemente / metas.cascaSemente) * 100
 					};
 
-					// Criar embed de confirmação com progresso
+					// Embed de confirmação e instrução
 					const embedConfirmacao = new EmbedBuilder()
 						.setTitle("✅ Itens Registrados com Sucesso!")
-						.setDescription("Seus itens foram registrados no sistema. **Por favor, envie o comprovante clicando no botão abaixo.**")
+						.setDescription("Seus itens foram registrados no sistema.\n\n**Por favor, envie o comprovante (imagem ou link) em até 2 minutos respondendo esta mensagem no privado do bot.**")
 						.addFields(
-							{ 
-								name: "🧪 Plástico", 
-								value: `${depositosAtuais.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`,
-								inline: true 
-							},
-							{ 
-								name: "📄 Seda", 
-								value: `${depositosAtuais.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`,
-								inline: true 
-							},
-							{ 
-								name: "🍃 Folha", 
-								value: `${depositosAtuais.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`,
-								inline: true 
-							},
-							{ 
-								name: "🌱 Casca de Semente", 
-								value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`,
-								inline: true 
-							}
+							{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`, inline: true },
+							{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`, inline: true },
+							{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`, inline: true },
+							{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`, inline: true }
 						)
 						.setColor("#00FF00")
 						.setFooter({ text: "Sistema de Registro de Farms" })
 						.setTimestamp();
 
-					// Verificar se todas as metas foram atingidas
-					const todasMetasAtingidas = 
-						depositosAtuais.plastico >= metas.plastico &&
-						depositosAtuais.seda >= metas.seda &&
-						depositosAtuais.folha >= metas.folha &&
-						depositosAtuais.cascaSemente >= metas.cascaSemente;
-
-					if (todasMetasAtingidas) {
-						embedConfirmacao
-							.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
-							.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.");
-
-						// Enviar log de meta atingida
-						const embedLogMeta = new EmbedBuilder()
-							.setTitle("🎯 Meta Diária Atingida")
-							.setDescription(`O usuário ${interaction.user} atingiu todas as metas diárias!`)
-							.addFields(
-								{
-									name: "📊 Itens Entregues",
-									value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
-								},
-								{
-									name: "⏰ Horário",
-									value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-								}
-							)
-							.setColor("#00FF00")
-							.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
-							.setTimestamp();
-
-						// Encontrar canal de logs
-						const canalLogs = interaction.guild.channels.cache.find(
-							channel => channel.name === "logs-farm"
-						);
-
-						if (canalLogs) {
-							await canalLogs.send({ embeds: [embedLogMeta] });
-						}
-
-						// Notificar gerentes sobre meta atingida
-						const embedNotificacaoMeta = new EmbedBuilder()
-							.setTitle("🎯 Meta Diária Concluída")
-							.setDescription(`O usuário ${interaction.user} atingiu todas as metas diárias!`)
-							.addFields(
-								{
-									name: "📊 Itens Entregues",
-									value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
-								},
-								{
-									name: "⏰ Horário",
-									value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-								}
-							)
-							.setColor("#00FF00")
-							.setFooter({ text: "Sistema de Farm" })
-							.setTimestamp();
-
-						const canalNotificacao = interaction.guild.channels.cache.find(
-							channel => channel.name === "notificacoes-gerentes"
-						);
-
-						if (canalNotificacao) {
-							await canalNotificacao.send({ 
-								content: "<@&1370136458278604822>",
-								embeds: [embedNotificacaoMeta] 
-							});
-						}
-
-						// Enviar mensagem privada para o usuário
-						try {
-							const embedPrivado = new EmbedBuilder()
-								.setTitle("🎉 Parabéns! Meta Concluída!")
-								.setDescription("Você atingiu todas as metas diárias! Aqui está um resumo do seu progresso:")
-								.addFields(
-									{
-										name: "📊 Seus Itens Entregues",
-										value: `🧪 Plástico: ${depositosAtuais.plastico}/${metas.plastico}\n📄 Seda: ${depositosAtuais.seda}/${metas.seda}\n🍃 Folha: ${depositosAtuais.folha}/${metas.folha}\n🌱 Casca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
-									},
-									{
-										name: "⏰ Próximo Reset",
-										value: "Os valores serão resetados à meia-noite."
-									}
-								)
-								.setColor("#00FF00")
-								.setFooter({ text: "Sistema de Farm" })
-								.setTimestamp();
-
-							await interaction.user.send({ embeds: [embedPrivado] });
-						} catch (error) {
-							console.error('Erro ao enviar mensagem privada:', error);
-						}
-					}
-
+					// Envia a confirmação no canal original
 					await interaction.reply({ 
 						embeds: [embedConfirmacao],
-						components: [rowUpload],
 						ephemeral: true 
 					});
 
-					// Enviar mensagem privada com o que falta
-					if (!todasMetasAtingidas) {
-						const embedFaltante = new EmbedBuilder()
-							.setTitle("📊 Progresso das Metas")
-							.setDescription("Ainda faltam itens para completar as metas diárias:")
-							.addFields(
-								{
-									name: "🧪 Plástico",
-									value: depositosAtuais.plastico >= metas.plastico 
-										? "✅ Meta atingida!" 
-										: `Faltam ${metas.plastico - depositosAtuais.plastico} unidades`,
-									inline: true
-								},
-								{
-									name: "📄 Seda",
-									value: depositosAtuais.seda >= metas.seda 
-										? "✅ Meta atingida!" 
-										: `Faltam ${metas.seda - depositosAtuais.seda} unidades`,
-									inline: true
-								},
-								{
-									name: "🍃 Folha",
-									value: depositosAtuais.folha >= metas.folha 
-										? "✅ Meta atingida!" 
-										: `Faltam ${metas.folha - depositosAtuais.folha} unidades`,
-									inline: true
-								},
-								{
-									name: "🌱 Casca de Semente",
-									value: depositosAtuais.cascaSemente >= metas.cascaSemente 
-										? "✅ Meta atingida!" 
-										: `Faltam ${metas.cascaSemente - depositosAtuais.cascaSemente} unidades`,
-									inline: true
+					// Envia instrução no privado
+					try {
+						const embedPrivado = new EmbedBuilder()
+							.setTitle("Envie seu comprovante")
+							.setDescription("Por favor, envie uma imagem ou link do comprovante respondendo esta mensagem. Você tem até 2 minutos.")
+							.setColor("#0099FF");
+						const dm = await interaction.user.createDM();
+						await dm.send({ embeds: [embedPrivado] });
+
+						// Aguarda a resposta do usuário no privado
+						const filter = m => m.author.id === userId && (m.attachments.size > 0 || m.content.match(/https?:\/\//));
+						const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
+
+						if (collected && collected.size > 0) {
+							const msg = collected.first();
+							let linkComprovante = null;
+							if (msg.attachments.size > 0) {
+								linkComprovante = msg.attachments.first().url;
+							} else {
+								linkComprovante = msg.content;
+							}
+							depositosAtuais.comprovanteEnviado = true;
+							depositosAtuais.linkComprovante = linkComprovante;
+							depositosDiarios.set(userId, depositosAtuais);
+
+							// Verifica se todas as metas foram atingidas
+							const todasMetasAtingidas = 
+								depositosAtuais.plastico >= metas.plastico &&
+								depositosAtuais.seda >= metas.seda &&
+								depositosAtuais.folha >= metas.folha &&
+								depositosAtuais.cascaSemente >= metas.cascaSemente;
+
+							if (todasMetasAtingidas) {
+								// Enviar embed de meta atingida com o comprovante
+								const embedMetaComprovante = new EmbedBuilder()
+									.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+									.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+									.addFields(
+										{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
+										{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
+										{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
+										{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` },
+										{ name: "📸 Comprovante", value: linkComprovante }
+									)
+									.setColor("#00FF00")
+									.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
+									.setTimestamp();
+
+								// Log
+								const canalLogs = interaction.guild.channels.cache.find(
+									channel => channel.name === "logs-farm"
+								);
+								if (canalLogs) {
+									await canalLogs.send({ embeds: [embedMetaComprovante] });
 								}
-							)
-							.setColor("#FFA500")
-							.setFooter({ text: "Lembre-se: Os valores são resetados à meia-noite" })
-							.setTimestamp();
 
-						try {
-							await interaction.user.send({ embeds: [embedFaltante] });
-						} catch (error) {
-							console.error('Erro ao enviar mensagem privada:', error);
-							await interaction.followUp({ 
-								content: "⚠️ Não foi possível enviar a mensagem privada. Verifique se você tem as mensagens diretas habilitadas.", 
-								ephemeral: true 
-							});
-						}
-
-						// Notificar gerentes
-						const embedNotificacao = new EmbedBuilder()
-							.setTitle("⚠️ Meta Não Atingida")
-							.setDescription(`O usuário ${interaction.user} não atingiu a meta diária.`)
-							.addFields(
-								{
-									name: "📊 Progresso",
-									value: `Plástico: ${depositosAtuais.plastico}/${metas.plastico}\nSeda: ${depositosAtuais.seda}/${metas.seda}\nFolha: ${depositosAtuais.folha}/${metas.folha}\nCasca de Semente: ${depositosAtuais.cascaSemente}/${metas.cascaSemente}`
+								// Notificar gerentes
+								const canalNotificacao = interaction.guild.channels.cache.find(
+									channel => channel.name === "notificacoes-gerentes"
+								);
+								if (canalNotificacao) {
+									await canalNotificacao.send({ 
+										content: "<@&1370136458278604822>",
+										embeds: [embedMetaComprovante] 
+									});
 								}
-							)
-							.setColor("#FF0000")
-							.setTimestamp();
 
-						// Encontrar canal de notificação para gerentes
-						const canalNotificacao = interaction.guild.channels.cache.find(
-							channel => channel.name === "notificacoes-gerentes"
-						);
-
-						if (canalNotificacao) {
-							await canalNotificacao.send({ 
-								content: "<@&1370136458278604822>",
-								embeds: [embedNotificacao] 
-							});
+								// Mensagem privada para o usuário
+								try {
+									await dm.send({ embeds: [embedMetaComprovante] });
+								} catch (error) {
+									console.error('Erro ao enviar mensagem privada:', error);
+								}
+							} else {
+								// Se não atingiu a meta, só confirma o recebimento do comprovante
+								const embedComprovante = new EmbedBuilder()
+									.setTitle("✅ Comprovante Recebido")
+									.setDescription("Seu comprovante foi registrado com sucesso!")
+									.addFields(
+										{ name: "📸 Comprovante", value: linkComprovante }
+									)
+									.setColor("#00FF00")
+									.setTimestamp();
+								await dm.send({ embeds: [embedComprovante] });
+							}
+						} else {
+							// Se não enviou comprovante em 2 minutos
+							await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
 						}
+					} catch (err) {
+						await interaction.user.send({ content: "❌ Não foi possível abrir o privado. Ative suas DMs para enviar o comprovante." });
 					}
-
 				} catch (error) {
 					console.error('Erro ao processar modal:', error);
 					await interaction.reply({ 
