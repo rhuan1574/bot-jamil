@@ -450,11 +450,63 @@ module.exports = {
 
 			if (depositosAtuais) {
 				depositosAtuais.comprovanteEnviado = true;
+				depositosAtuais.linkComprovante = linkComprovante;
 				depositosDiarios.set(userId, depositosAtuais);
 
+				// Verificar se todas as metas foram atingidas para o log
+				const todasMetasAtingidas = 
+					depositosAtuais.plastico >= metas.plastico &&
+					depositosAtuais.seda >= metas.seda &&
+					depositosAtuais.folha >= metas.folha &&
+					depositosAtuais.cascaSemente >= metas.cascaSemente;
+
+				if (todasMetasAtingidas) {
+					// Enviar embed de meta atingida com o comprovante
+					const embedMetaComprovante = new EmbedBuilder()
+						.setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+						.setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+						.addFields(
+							{ name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
+							{ name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
+							{ name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
+							{ name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` },
+							{ name: "📸 Comprovante", value: linkComprovante }
+						)
+						.setColor("#00FF00")
+						.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
+						.setTimestamp();
+
+					// Log
+					const canalLogs = interaction.guild.channels.cache.find(
+						channel => channel.name === "logs-farm"
+					);
+					if (canalLogs) {
+						await canalLogs.send({ embeds: [embedMetaComprovante] });
+					}
+
+					// Notificar gerentes
+					const canalNotificacao = interaction.guild.channels.cache.find(
+						channel => channel.name === "notificacoes-gerentes"
+					);
+					if (canalNotificacao) {
+						await canalNotificacao.send({ 
+							content: "<@&1370136458278604822>",
+							embeds: [embedMetaComprovante] 
+						});
+					}
+
+					// Mensagem privada para o usuário
+					try {
+						await interaction.user.send({ embeds: [embedMetaComprovante] });
+					} catch (error) {
+						console.error('Erro ao enviar mensagem privada:', error);
+					}
+				}
+
+				// Resposta ao usuário após envio do comprovante
 				const embedComprovante = new EmbedBuilder()
 					.setTitle("✅ Comprovante Recebido")
-					.setDescription("Seu comprovante foi registrado com sucesso!")
+					.setDescription(todasMetasAtingidas ? "Seu comprovante foi registrado e sua meta foi concluída!" : "Seu comprovante foi registrado com sucesso!")
 					.addFields(
 						{ name: "📸 Comprovante", value: linkComprovante }
 					)
@@ -465,69 +517,6 @@ module.exports = {
 					embeds: [embedComprovante], 
 					ephemeral: true 
 				});
-
-				// Verificar se todas as metas foram atingidas para o log
-				const todasMetasAtingidas = 
-					depositosAtuais.plastico >= metas.plastico &&
-					depositosAtuais.seda >= metas.seda &&
-					depositosAtuais.folha >= metas.folha &&
-					depositosAtuais.cascaSemente >= metas.cascaSemente;
-
-				// Notificar gerentes sobre o comprovante
-				const embedNotificacaoComprovante = new EmbedBuilder()
-					.setTitle("📸 Novo Comprovante")
-					.setDescription(`O usuário ${interaction.user} enviou um comprovante.`)
-					.addFields(
-						{ name: "🔗 Link do Comprovante", value: linkComprovante },
-						{ 
-							name: "📊 Status das Metas", 
-							value: todasMetasAtingidas 
-								? "✅ Todas as metas foram atingidas!" 
-								: "⚠️ Metas ainda não atingidas"
-						}
-					)
-					.setColor(todasMetasAtingidas ? "#00FF00" : "#FFA500")
-					.setTimestamp();
-
-				const canalNotificacao = interaction.guild.channels.cache.find(
-					channel => channel.name === "notificacoes-gerentes"
-				);
-
-				if (canalNotificacao) {
-					await canalNotificacao.send({ 
-						content: "<@&1370136458278604822>",
-						embeds: [embedNotificacaoComprovante] 
-					});
-				}
-
-				// Enviar log do comprovante
-				const embedLogComprovante = new EmbedBuilder()
-					.setTitle("📸 Comprovante Registrado")
-					.setDescription(`O usuário ${interaction.user} enviou um comprovante.`)
-					.addFields(
-						{ name: "🔗 Link do Comprovante", value: linkComprovante },
-						{ 
-							name: "📊 Status das Metas", 
-							value: todasMetasAtingidas 
-								? "✅ Todas as metas foram atingidas!" 
-								: "⚠️ Metas ainda não atingidas"
-						},
-						{
-							name: "⏰ Horário",
-							value: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-						}
-					)
-					.setColor(todasMetasAtingidas ? "#00FF00" : "#FFA500")
-					.setFooter({ text: `ID do Usuário: ${interaction.user.id}` })
-					.setTimestamp();
-
-				const canalLogs = interaction.guild.channels.cache.find(
-					channel => channel.name === "logs-farm"
-				);
-
-				if (canalLogs) {
-					await canalLogs.send({ embeds: [embedLogComprovante] });
-				}
 			}
 		}
 	},
