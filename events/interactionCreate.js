@@ -409,7 +409,7 @@ module.exports = {
 
 						if (canalNotificacao) {
 							await canalNotificacao.send({ 
-								content: "<@&1370136458278604822>", // Substitua ID_DO_CARGO_GERENTE pelo ID real do cargo
+								content: "<@&1370136458278604822>",
 								embeds: [embedNotificacao] 
 							});
 						}
@@ -497,7 +497,7 @@ module.exports = {
 
 				if (canalNotificacao) {
 					await canalNotificacao.send({ 
-						content: "<@&ID_DO_CARGO_GERENTE>",
+						content: "<@&1370136458278604822>",
 						embeds: [embedNotificacaoComprovante] 
 					});
 				}
