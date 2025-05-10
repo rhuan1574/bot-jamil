@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -77,6 +77,35 @@ module.exports = {
 							const row = new ActionRowBuilder().addComponents(buttonFarm)
 
 						await interaction.reply({ embeds: [embedFarm],components: [row], ephemeral: true });
+
+						case "info-farm":
+							const modalFarm = new ModalBuilder()
+							.setCustomId("modal-farm")
+							.setTitle("Coloque os itens do farm")
+							
+							const input1 = new TextInputBuilder()
+							.setCustomId("plastico")
+							.setLabel("Plástico")
+							.setStyle(TextInputStyle.Short)
+
+							const input2 = new TextInputBuilder()
+							.setCustomId("seda")
+							.setLabel("Seda")
+							.setStyle(TextInputStyle.Short)
+
+							const input3 = new TextInputBuilder()
+							.setCustomId("folha")
+							.setLabel("Folha")
+							.setStyle(TextInputStyle.Short)
+
+							const input4 = new TextInputBuilder()
+							.setCustomId("casca-de-semente")
+							.setLabel("Casca de Semente")
+							.setStyle(TextInputStyle.Short)
+
+							const rowModal = new ActionRowBuilder().addComponents(input1,input2,input3,input4)
+
+							modalFarm.addComponents(rowModal);
 						break;
 
 					default:
