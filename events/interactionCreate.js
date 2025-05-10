@@ -1,4 +1,4 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder } = require('discord.js');
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -30,6 +30,19 @@ module.exports = {
 				}
 			} catch (err) {
 				console.error('Erro ao enviar mensagem de erro:', err);
+			}
+		}
+
+		if(interaction.isButton()) {
+			const customId = interaction
+			if(customId === "button-dinheiro") {
+				const embed = new EmbedBuilder()
+				.setTitle("Será aceito somente transferencia")
+				.setDescription("somante transferencia")
+				.setColor("Blue")
+
+
+				await interaction.reply({ embeds: [embed]})
 			}
 		}
 	},
