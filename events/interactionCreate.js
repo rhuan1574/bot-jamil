@@ -67,6 +67,12 @@ const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, d
         .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
         .setTimestamp();
 
+    // Calcular isenção ao atingir todas as metas
+    const agora = new Date();
+    const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
+    depositosAtuais.isencaoAte = isencaoAte;
+    depositosDiarios.set(interaction.user.id, depositosAtuais);
+
     const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
     const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
     await Promise.all([
