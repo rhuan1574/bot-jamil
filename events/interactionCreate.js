@@ -111,20 +111,18 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, depositosAtuais)
     depositosDiarios.set(userId, depositosAtuais);
 
     // Embed de confirmação
-    const embedConfirmacao = new EmbedBuilder()
-        .setTitle("💵 Pagamento Confirmado")
-        .setDescription(`O <@${interaction.user.id}> pagou ${valor} (equivalente a ${diasPagos} dia${diasPagos > 1 ? 's' : ''}). Ele está isento de cobranças até ${isencaoAte.toLocaleString()}.`)
-        .setImage(`attachment://${attachment.name}`)
-        .setColor("#00FF00")
-        .setTimestamp();
+const embedConfirmacao = new EmbedBuilder()
+    .setTitle("💵 Pagamento Confirmado")
+    .setDescription(`O <@${interaction.user.id}> pagou ${valor} (equivalente a ${diasPagos} dia${diasPagos > 1 ? 's' : ''}). Ele está isento de cobranças até ${isencaoAte.toLocaleString()}.`)
+    .setImage(`attachment://${attachment.name}`)
+    .setColor("#00FF00")
+    .setTimestamp();
 
-    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
-    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
-    await Promise.all([
-        msg.channel.send({ embeds: [embedConfirmacao], files: [attachment] }),
-        canalLogs?.send({ embeds: [embedConfirmacao], files: [attachment] }),
-        canalNotificacao?.send({ content: `<@&1370136458278604822>`, embeds: [embedConfirmacao], files: [attachment] })
-    ]);
+await Promise.all([
+    msg.channel.send({ embeds: [embedConfirmacao], files: [attachment] }),
+    canalLogs?.send({ embeds: [embedConfirmacao], files: [attachment] }),
+    canalNotificacao?.send({ content: `<@&1370136458278604822>`, embeds: [embedConfirmacao], files: [attachment] })
+]);
 
     // Confirmação no canal original
     await interaction.editReply({ content: "✅ Pagamento registrado com sucesso!", embeds: [embedConfirmacao], files: [attachment] });
