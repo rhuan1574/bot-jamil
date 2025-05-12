@@ -1,17 +1,18 @@
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { Token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
 
 // Create a new client instance with all necessary intents
 const client = new Client({ 
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.GuildMembers
-	] 
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages  // Adicione esta linha
+    ] 
 });
 client.commands = new Collection();
 client.cooldowns = new Collection();
