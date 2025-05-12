@@ -1,91 +1,110 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
-// Definição das metas diárias de farm
+// Sistema de metas e controle diário
 const metas = {
-    plastico: 100,
-    seda: 50,
-    folha: 200,
-    cascaSemente: 30
+    cascaSemente: 120,
+    folha: 120,
+    seda: 120,
+    plastico: 40
 };
 
-// Valor diário para pagamento em dinheiro
+// Valor diário em dinheiro
 const VALOR_DIARIO = 16000;
 
-// Mapa para armazenar os depósitos diários de cada usuário
-const depositosDiarios = new Map();
+// Armazenamento temporário dos valores diários e pagamentos
+let depositosDiarios = new Map();
 
-// Função para lidar com o comprovante de farm
-async function handleComprovanteFarm(interaction, attachment, depositosAtuais, userId) {
-    // Verificar se o anexo é uma imagem PNG
-    if (!attachment || !attachment.url.endsWith('.png')) {
-        await interaction.reply({ content: "Por favor, envie uma imagem PNG como comprovante.", ephemeral: true });
+// Função para resetar os valores diários
+function resetarValoresDiarios() {
+    depositosDiarios.forEach((value, userId) => {
+        depositosDiarios.set(userId, {
+            plastico: 0,
+            seda: 0,
+            folha: 0,
+            cascaSemente: 0,
+            comprovanteEnviado: false,
+            linkComprovante: null,
+            dinheiro: value.dinheiro || 0,
+            isencaoAte: value.isencaoAte || null
+        });
+    });
+}
+
+// Configurar reset diário (meia-noite)
+setInterval(() => {
+    const agora = new Date();
+    if (agora.getHours() === 0 && agora.getMinutes() === 0) {
+        resetarValoresDiarios();
+    }
+}, 60000);
+
+// Função para verificar isenção de cobrança
+function isIsento(userId) {
+    const dados = depositosDiarios.get(userId);
+    if (!dados || !dados.isencaoAte) return false;
+    return new Date() < new Date(dados.isencaoAte);
+}
+
+// Função para processar comprovante de farm
+const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, deleteDelay = 60000) => {
+    if (msg.attachments.size === 0) {
+        await msg.channel.send({ content: "❌ Por favor, envie uma imagem como comprovante!" });
         return;
     }
 
-    // Calcular o número de dias de isenção com base nas quantidades acumuladas
-    const ratios = [
-        depositosAtuais.plastico / metas.plastico,
-        depositosAtuais.seda / metas.seda,
-        depositosAtuais.folha / metas.folha,
-        depositosAtuais.cascaSemente / metas.cascaSemente
-    ];
-    const minRatio = Math.min(...ratios);
-    const N = Math.floor(minRatio);
-
-    // Calcular a nova data de isenção
-    const agora = new Date();
-    const isencaoAte = new Date(agora.getTime() + N * 24 * 60 * 60 * 1000);
-    depositosAtuais.isencaoAte = isencaoAte;
-
-    // Subtrair as quantidades usadas para conceder a isenção
-    depositosAtuais.plastico -= N * metas.plastico;
-    depositosAtuais.seda -= N * metas.seda;
-    depositosAtuais.folha -= N * metas.folha;
-    depositosAtuais.cascaSemente -= N * metas.cascaSemente;
-
-    // Garantir que os valores não sejam negativos
-    depositosAtuais.plastico = Math.max(0, depositosAtuais.plastico);
-    depositosAtuais.seda = Math.max(0, depositosAtuais.seda);
-    depositosAtuais.folha = Math.max(0, depositosAtuais.folha);
-    depositosAtuais.cascaSemente = Math.max(0, depositosAtuais.cascaSemente);
-
-    // Atualizar os dados do usuário
-    depositosDiarios.set(userId, depositosAtuais);
-
-    // Criar embed de celebração com a nova lógica
-    const embedCelebracao = new EmbedBuilder()
-        .setTitle("🎉 Farm Confirmado!")
-        .setDescription(`Você confirmou o farm e agora está isento por ${N} dia(s) até ${isencaoAte.toLocaleString()}.`)
+    const attachment = msg.attachments.first();
+    const embedMetaComprovante = new EmbedBuilder()
+        .setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+        .setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+        .addFields(
+            { name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
+            { name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
+            { name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
+            { name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` }
+        )
         .setImage(`attachment://${attachment.name}`)
-        .setColor("#FFD700")
+        .setColor("#00FF00")
+        .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
         .setTimestamp();
 
-    // Enviar embed para o usuário
-    await interaction.user.send({ embeds: [embedCelebracao], files: [attachment] });
-
-    // Enviar para logs e notificações
     const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
     const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
     await Promise.all([
-        canalLogs?.send({ embeds: [embedCelebracao], files: [attachment] }),
-        canalNotificacao?.send({ content: `<@&1370136458278604822>`, embeds: [embedCelebracao], files: [attachment] })
+        msg.channel.send({ content: "Imagem recebida com sucesso!", embeds: [embedMetaComprovante], files: [attachment] }),
+        canalLogs?.send({ embeds: [embedMetaComprovante], files: [attachment] }),
+        canalNotificacao?.send({ content: "<@&1370136458278604822>", embeds: [embedMetaComprovante], files: [attachment] })
     ]);
 
-    // Confirmar no canal original
-    await interaction.editReply({ content: "✅ Comprovante recebido e farm confirmado!", ephemeral: true });
-}
+    setTimeout(() => msg.delete().catch(() => {}), deleteDelay);
+};
 
-// Função para lidar com o pagamento em dinheiro
-async function handlePagamentoDinheiro(interaction, attachment, depositosAtuais, userId, valor) {
-    // Verificar se o anexo é uma imagem PNG
-    if (!attachment || !attachment.url.endsWith('.png')) {
-        await interaction.reply({ content: "Por favor, envie uma imagem PNG como comprovante.", ephemeral: true });
+// Função para processar pagamento em dinheiro
+const handlePagamentoDinheiro = async (msg, interaction, valor, depositosAtuais) => {
+    if (msg.attachments.size === 0) {
+        await msg.channel.send({ content: "❌ Por favor, envie uma imagem como comprovante!" });
+        return;
+    }
+
+    const attachment = msg.attachments.first();
+    const userId = interaction.user.id;
+
+    // Verificar se o valor é múltiplo de 16.000
+    const diasPagos = Math.floor(valor / VALOR_DIARIO);
+    if (valor % VALOR_DIARIO !== 0 || diasPagos === 0) {
+        const embedErro = new EmbedBuilder()
+            .setTitle("❌ Valor Inválido")
+            .setDescription(`O valor pago (${valor}) não é um múltiplo de ${VALOR_DIARIO}. Por favor, envie o valor correto.`)
+            .setColor("#FF0000");
+        const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
+        await Promise.all([
+            msg.channel.send({ embeds: [embedErro] }),
+            canalNotificacao?.send({ content: `<@&1370136458278604822> Usuário <@${userId}> enviou valor incorreto: ${valor}`, embeds: [embedErro] })
+        ]);
         return;
     }
 
     // Calcular isenção
     const agora = new Date();
-    const diasPagos = Math.floor(valor / VALOR_DIARIO);
     const isencaoAte = new Date(agora.getTime() + diasPagos * 24 * 60 * 60 * 1000);
     depositosAtuais.dinheiro += valor;
     depositosAtuais.isencaoAte = isencaoAte;
@@ -102,163 +121,248 @@ async function handlePagamentoDinheiro(interaction, attachment, depositosAtuais,
     const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
     const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
     await Promise.all([
-        interaction.user.send({ embeds: [embedConfirmacao], files: [attachment] }),
+        msg.channel.send({ embeds: [embedConfirmacao], files: [attachment] }),
         canalLogs?.send({ embeds: [embedConfirmacao], files: [attachment] }),
         canalNotificacao?.send({ content: `<@&1370136458278604822>`, embeds: [embedConfirmacao], files: [attachment] })
     ]);
 
     // Confirmação no canal original
     await interaction.editReply({ content: "✅ Pagamento registrado com sucesso!", embeds: [embedConfirmacao], files: [attachment] });
-}
+};
 
-// Exportar o evento de interação
-module.exports = async (interaction) => {
-    if (interaction.isButton()) {
-        if (interaction.customId === 'button-farm') {
-            // Enviar embed com as metas diárias e botão "Depositar"
-            const embed = new EmbedBuilder()
-                .setTitle('Metas Diárias de Farm')
-                .setDescription(`Plástico: ${metas.plastico}\nSeda: ${metas.seda}\nFolha: ${metas.folha}\nCasca de Semente: ${metas.cascaSemente}`)
-                .setColor('#00FF00');
-
-            const buttonDepositar = new ButtonBuilder()
-                .setCustomId('depositar-farm')
-                .setLabel('Depositar')
-                .setStyle(ButtonStyle.Primary);
-
-            const row = new ActionRowBuilder().addComponents(buttonDepositar);
-
-            await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
-        } else if (interaction.customId === 'depositar-farm') {
-            // Mostrar modal para depositar farm
-            const modal = new ModalBuilder()
-                .setCustomId('modal-farm')
-                .setTitle('Depositar Farm');
-
-            const plasticoInput = new TextInputBuilder()
-                .setCustomId('plastico')
-                .setLabel('Quantidade de Plástico')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true);
-
-            const sedaInput = new TextInputBuilder()
-                .setCustomId('seda')
-                .setLabel('Quantidade de Seda')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true);
-
-            const folhaInput = new TextInputBuilder()
-                .setCustomId('folha')
-                .setLabel('Quantidade de Folha')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true);
-
-            const cascaInput = new TextInputBuilder()
-                .setCustomId('cascaSemente')
-                .setLabel('Quantidade de Casca de Semente')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true);
-
-            const firstActionRow = new ActionRowBuilder().addComponents(plasticoInput);
-            const secondActionRow = new ActionRowBuilder().addComponents(sedaInput);
-            const thirdActionRow = new ActionRowBuilder().addComponents(folhaInput);
-            const fourthActionRow = new ActionRowBuilder().addComponents(cascaInput);
-
-            modal.addComponents(firstActionRow, secondActionRow, thirdActionRow, fourthActionRow);
-
-            await interaction.showModal(modal);
-        } else if (interaction.customId === 'button-dinheiro') {
-            // Mostrar modal para pagamento em dinheiro
-            const modal = new ModalBuilder()
-                .setCustomId('modal-dinheiro')
-                .setTitle('Pagamento em Dinheiro');
-
-            const valorInput = new TextInputBuilder()
-                .setCustomId('valor')
-                .setLabel('Valor do Pagamento (em R$)')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true);
-
-            const actionRow = new ActionRowBuilder().addComponents(valorInput);
-            modal.addComponents(actionRow);
-
-            await interaction.showModal(modal);
-        }
-    } else if (interaction.isModalSubmit()) {
-        if (interaction.customId === 'modal-farm') {
-            // Processar submissão do modal para farm
-            const plastico = parseInt(interaction.fields.getTextInputValue('plastico'));
-            const seda = parseInt(interaction.fields.getTextInputValue('seda'));
-            const folha = parseInt(interaction.fields.getTextInputValue('folha'));
-            const cascaSemente = parseInt(interaction.fields.getTextInputValue('cascaSemente'));
-
-            const userId = interaction.user.id;
-
-            let depositosAtuais = depositosDiarios.get(userId) || { plastico: 0, seda: 0, folha: 0, cascaSemente: 0, dinheiro: 0, isencaoAte: new Date(0) };
-
-            depositosAtuais.plastico += plastico;
-            depositosAtuais.seda += seda;
-            depositosAtuais.folha += folha;
-            depositosAtuais.cascaSemente += cascaSemente;
-
-            depositosDiarios.set(userId, depositosAtuais);
-
-            const todasMetasAtingidas = depositosAtuais.plastico >= metas.plastico &&
-                                       depositosAtuais.seda >= metas.seda &&
-                                       depositosAtuais.folha >= metas.folha &&
-                                       depositosAtuais.cascaSemente >= metas.cascaSemente;
-
-            if (todasMetasAtingidas) {
-                // Enviar DM solicitando comprovante
-                const dmChannel = await interaction.user.createDM();
-                await dmChannel.send('Envie o comprovante de farm (imagem PNG) dentro de 2 minutos.');
-
-                // Configurar coletor para DM
-                const filter = m => m.author.id === userId && m.attachments.size > 0 && m.attachments.first().url.endsWith('.png');
-                const collector = dmChannel.createMessageCollector({ filter, time: 120000, max: 1 });
-
-                collector.on('collect', async (m) => {
-                    const attachment = m.attachments.first();
-                    await handleComprovanteFarm(interaction, attachment, depositosAtuais, userId);
-                });
-
-                collector.on('end', collected => {
-                    if (collected.size === 0) {
-                        dmChannel.send('Tempo esgotado ou anexo inválido. Por favor, tente novamente.');
-                    }
-                });
-
-                await interaction.reply({ content: 'Verifique sua DM para enviar o comprovante.', ephemeral: true });
-            } else {
-                await interaction.reply({ content: 'Você ainda não atingiu todas as metas diárias.', ephemeral: true });
+module.exports = {
+    name: Events.InteractionCreate,
+    async execute(interaction) {
+        if (interaction.isChatInputCommand()) {
+            const command = interaction.client.commands.get(interaction.commandName);
+            if (!command) {
+                console.error(`Comando ${interaction.commandName} não encontrado.`);
+                return;
             }
-        } else if (interaction.customId === 'modal-dinheiro') {
-            // Processar submissão do modal para pagamento em dinheiro
-            const valor = parseFloat(interaction.fields.getTextInputValue('valor'));
-            const userId = interaction.user.id;
-
-            let depositosAtuais = depositosDiarios.get(userId) || { plastico: 0, seda: 0, folha: 0, cascaSemente: 0, dinheiro: 0, isencaoAte: new Date(0) };
-
-            // Enviar DM solicitando comprovante
-            const dmChannel = await interaction.user.createDM();
-            await dmChannel.send('Envie o comprovante de pagamento (imagem PNG) dentro de 2 minutos.');
-
-            // Configurar coletor para DM
-            const filter = m => m.author.id === userId && m.attachments.size > 0 && m.attachments.first().url.endsWith('.png');
-            const collector = dmChannel.createMessageCollector({ filter, time: 120000, max: 1 });
-
-            collector.on('collect', async (m) => {
-                const attachment = m.attachments.first();
-                await handlePagamentoDinheiro(interaction, attachment, depositosAtuais, userId, valor);
-            });
-
-            collector.on('end', collected => {
-                if (collected.size === 0) {
-                    dmChannel.send('Tempo esgotado ou anexo inválido. Por favor, tente novamente.');
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(`Erro ao executar o comando ${interaction.commandName}:`, error);
+                const errorMessage = { content: '❌ Houve um erro ao executar este comando!', ephemeral: true };
+                try {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp(errorMessage);
+                    } else if (!interaction.acknowledged) {
+                        await interaction.reply(errorMessage);
+                    }
+                } catch (err) {
+                    console.error('Erro ao enviar mensagem de erro:', err);
                 }
-            });
-
-            await interaction.reply({ content: 'Verifique sua DM para enviar o comprovante.', ephemeral: true });
+            }
         }
-    }
+
+        if (interaction.isButton()) {
+            const { customId } = interaction;
+            try {
+                switch (customId) {
+                    case "button-dinheiro":
+                        const modalDinheiro = new ModalBuilder()
+                            .setCustomId("modal-dinheiro")
+                            .setTitle("💵 Pagamento em Dinheiro");
+                        const inputValor = new TextInputBuilder()
+                            .setCustomId("valor-dinheiro")
+                            .setLabel("Valor do Pagamento")
+                            .setPlaceholder(`Digite o valor (múltiplo de ${VALOR_DIARIO})`)
+                            .setStyle(TextInputStyle.Short)
+                            .setRequired(true);
+                        modalDinheiro.addComponents(new ActionRowBuilder().addComponents(inputValor));
+                        await interaction.showModal(modalDinheiro);
+                        break;
+
+                    case "button-farm":
+                        const embedFarm = new EmbedBuilder()
+                            .setTitle("📦 Registro de Farm")
+                            .setDescription("Para registrar sua farm, preencha as informações abaixo:")
+                            .addFields(
+                                { name: "🏠 Endereço", value: "Informe o endereço completo da farm" },
+                                { name: "📱 Contato", value: "Telefone para contato" },
+                                { name: "⏰ Horário", value: "Horário de funcionamento" }
+                            )
+                            .setColor("#0099FF")
+                            .setFooter({ text: "Sistema de Registro de Farms" })
+                            .setTimestamp();
+                        const buttonFarm = new ButtonBuilder()
+                            .setCustomId("info-farm")
+                            .setLabel("Depositar")
+                            .setStyle(ButtonStyle.Success)
+                            .setEmoji("📥");
+                        const rowFarm = new ActionRowBuilder().addComponents(buttonFarm);
+                        await interaction.reply({ embeds: [embedFarm], components: [rowFarm], ephemeral: true });
+                        break;
+
+                    case "info-farm":
+                        const modalFarm = new ModalBuilder()
+                            .setCustomId("modal-farm")
+                            .setTitle("📝 Registro de Itens do Farm");
+                        const inputs = [
+                            { id: "plastico", label: "Quantidade de Plástico", placeholder: "Digite a quantidade de plástico" },
+                            { id: "seda", label: "Quantidade de Seda", placeholder: "Digite a quantidade de seda" },
+                            { id: "folha", label: "Quantidade de Folha", placeholder: "Digite a quantidade de folha" },
+                            { id: "casca-de-semente", label: "Quantidade de Casca de Semente", placeholder: "Digite a quantidade de casca de semente" }
+                        ].map(input => new TextInputBuilder()
+                            .setCustomId(input.id)
+                            .setLabel(input.label)
+                            .setPlaceholder(input.placeholder)
+                            .setStyle(TextInputStyle.Short)
+                            .setRequired(true)
+                        );
+                        modalFarm.addComponents(inputs.map(input => new ActionRowBuilder().addComponents(input)));
+                        await interaction.showModal(modalFarm);
+                        break;
+
+                    default:
+                        await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
+                }
+            } catch (error) {
+                console.error('Erro ao processar interação do botão:', error);
+                await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
+            }
+        }
+
+        if (interaction.isModalSubmit()) {
+            if (interaction.customId === "modal-farm") {
+                try {
+                    const userId = interaction.user.id;
+                    const plastico = parseInt(interaction.fields.getTextInputValue("plastico")) || 0;
+                    const seda = parseInt(interaction.fields.getTextInputValue("seda")) || 0;
+                    const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
+                    const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
+
+                    const depositosAtuais = depositosDiarios.get(userId) || {
+                        plastico: 0,
+                        seda: 0,
+                        folha: 0,
+                        cascaSemente: 0,
+                        comprovanteEnviado: false,
+                        linkComprovante: null,
+                        dinheiro: 0,
+                        isencaoAte: null
+                    };
+
+                    depositosAtuais.plastico += plastico;
+                    depositosAtuais.seda += seda;
+                    depositosAtuais.folha += folha;
+                    depositosAtuais.cascaSemente += cascaSemente;
+                    depositosAtuais.comprovanteEnviado = false;
+                    depositosAtuais.linkComprovante = null;
+                    depositosDiarios.set(userId, depositosAtuais);
+
+                    const progresso = {
+                        plastico: (depositosAtuais.plastico / metas.plastico) * 100,
+                        seda: (depositosAtuais.seda / metas.seda) * 100,
+                        folha: (depositosAtuais.folha / metas.folha) * 100,
+                        cascaSemente: (depositosAtuais.cascaSemente / metas.cascaSemente) * 100
+                    };
+
+                    const embedConfirmacao = new EmbedBuilder()
+                        .setTitle("✅ Itens Registrados com Sucesso!")
+                        .setDescription("Seus itens foram registrados no sistema.\n\n**Por favor, envie a imagem do comprovante em até 2 minutos respondendo esta mensagem no privado do bot.**")
+                        .addFields(
+                            { name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`, inline: true },
+                            { name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`, inline: true },
+                            { name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`, inline: true },
+                            { name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`, inline: true }
+                        )
+                        .setColor("#00FF00")
+                        .setFooter({ text: "Sistema de Registro de Farms" })
+                        .setTimestamp();
+
+                    await interaction.reply({ embeds: [embedConfirmacao], ephemeral: true });
+
+                    try {
+                        const embedPrivado = new EmbedBuilder()
+                            .setTitle("Envie seu comprovante")
+                            .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem. Você tem até 2 minutos.")
+                            .setColor("#0099FF");
+                        const dm = await interaction.user.createDM();
+                        await dm.send({ embeds: [embedPrivado] });
+
+                        const filter = m => m.author.id === userId && m.attachments.size > 0;
+                        const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
+
+                        if (collected && collected.size > 0) {
+                            const msg = collected.first();
+                            depositosAtuais.comprovanteEnviado = true;
+                            depositosAtuais.linkComprovante = msg.attachments.first().url;
+                            depositosDiarios.set(userId, depositosAtuais);
+
+                            const todasMetasAtingidas = 
+                                depositosAtuais.plastico >= metas.plastico &&
+                                depositosAtuais.seda >= metas.seda &&
+                                depositosAtuais.folha >= metas.folha &&
+                                depositosAtuais.cascaSemente >= metas.cascaSemente;
+
+                            if (todasMetasAtingidas) {
+                                await handleComprovanteFarm(msg, interaction, depositosAtuais, metas, 60000);
+                            } else {
+                                const attachment = msg.attachments.first();
+                                const embedComprovante = new EmbedBuilder()
+                                    .setTitle("✅ Comprovante Recebido")
+                                    .setDescription("Seu comprovante foi registrado com sucesso!")
+                                    .setImage(`attachment://${attachment.name}`)
+                                    .setColor("#00FF00")
+                                    .setTimestamp();
+                                await dm.send({ embeds: [embedComprovante], files: [attachment] });
+                                setTimeout(() => msg.delete().catch(() => {}), 60000);
+                            }
+                        } else {
+                            await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
+                        }
+                    } catch (err) {
+                        await interaction.user.send({ content: "❌ Não foi possível abrir o privado. Ative suas DMs para enviar o comprovante." });
+                    }
+                } catch (error) {
+                    console.error('Erro ao processar modal:', error);
+                    await interaction.reply({ content: "❌ Ocorreu um erro ao processar seus dados!", ephemeral: true });
+                }
+            }
+
+            if (interaction.customId === "modal-dinheiro") {
+                try {
+                    const userId = interaction.user.id;
+                    const valor = parseInt(interaction.fields.getTextInputValue("valor-dinheiro")) || 0;
+
+                    const depositosAtuais = depositosDiarios.get(userId) || {
+                        plastico: 0,
+                        seda: 0,
+                        folha: 0,
+                        cascaSemente: 0,
+                        comprovanteEnviado: false,
+                        linkComprovante: null,
+                        dinheiro: 0,
+                        isencaoAte: null
+                    };
+
+                    const embedPrivado = new EmbedBuilder()
+                        .setTitle("Envie seu comprovante")
+                        .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem no privado. Você tem até 2 minutos.")
+                        .setColor("#0099FF");
+
+                    await interaction.reply({ content: "✅ Valor registrado! Envie a imagem do comprovante no privado.", ephemeral: true });
+
+                    const dm = await interaction.user.createDM();
+                    await dm.send({ embeds: [embedPrivado] });
+
+                    const filter = m => m.author.id === userId && m.attachments.size > 0;
+                    const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
+
+                    if (collected && collected.size > 0) {
+                        const msg = collected.first();
+                        await handlePagamentoDinheiro(msg, interaction, valor, depositosAtuais);
+                        setTimeout(() => msg.delete().catch(() => {}), 60000);
+                    } else {
+                        await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
+                    }
+                } catch (error) {
+                    console.error('Erro ao processar modal de dinheiro:', error);
+                    await interaction.reply({ content: "❌ Ocorreu um erro ao processar seu pagamento!", ephemeral: true });
+                }
+            }
+        }
+    },
 };
