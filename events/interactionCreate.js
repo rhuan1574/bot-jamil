@@ -113,7 +113,7 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, depositosAtuais)
     // Embed de confirmação
     const embedConfirmacao = new EmbedBuilder()
         .setTitle("💵 Pagamento Confirmado")
-        .setDescription(`Você pagou ${valor} (equivalente a ${diasPagos} dia${diasPagos > 1 ? 's' : ''}). Você está isento de cobranças até ${isencaoAte.toLocaleString()}.`)
+        .setDescription(`O ${interaction.user.id} pagou ${valor} (equivalente a ${diasPagos} dia${diasPagos > 1 ? 's' : ''}). Ele está isento de cobranças até ${isencaoAte.toLocaleString()}.`)
         .setImage(`attachment://${attachment.name}`)
         .setColor("#00FF00")
         .setTimestamp();
