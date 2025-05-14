@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { Token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
-const conectarMongoDB = require('./database/connect.js');
+const conectarMongoDB = require('./events/ready.js');
 require('dotenv').config();
 
 
