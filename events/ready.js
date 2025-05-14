@@ -61,7 +61,7 @@ module.exports = {
             });
 
             // Notificação ajustada para 11:31 AM (UTC-3 = 14:31 UTC)
-            schedule.scheduleJob('50 14 * * *', async function() {
+            schedule.scheduleJob('52 14 * * *', async function() {
                 try {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0); // Início do dia
