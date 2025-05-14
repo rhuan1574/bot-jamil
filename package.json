@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
+    "dotenv": "^16.5.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.3",
     "node-cron": "^4.0.3",
