@@ -1,4 +1,5 @@
 const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const Player = require('../database/models/Player');
 
 // Sistema de metas e controle diário
 const metas = {
@@ -11,42 +12,14 @@ const metas = {
 // Valor diário em dinheiro
 const VALOR_DIARIO = 16000;
 
-// Armazenamento temporário dos valores diários e pagamentos
-let depositosDiarios = new Map();
-
-// Função para resetar os valores diários
-function resetarValoresDiarios() {
-    depositosDiarios.forEach((value, userId) => {
-        depositosDiarios.set(userId, {
-            plastico: 0,
-            seda: 0,
-            folha: 0,
-            cascaSemente: 0,
-            comprovanteEnviado: false,
-            linkComprovante: null,
-            dinheiro: value.dinheiro || 0,
-            isencaoAte: value.isencaoAte || null
-        });
-    });
-}
-
-// Configurar reset diário (meia-noite)
-setInterval(() => {
-    const agora = new Date();
-    if (agora.getHours() === 0 && agora.getMinutes() === 0) {
-        resetarValoresDiarios();
-    }
-}, 60000);
-
 // Função para verificar isenção de cobrança
-function isIsento(userId) {
-    const dados = depositosDiarios.get(userId);
-    if (!dados || !dados.isencaoAte) return false;
-    return new Date() < new Date(dados.isencaoAte);
+function isIsento(player) {
+    if (!player || !player.isencaoAte) return false;
+    return new Date() < new Date(player.isencaoAte);
 }
 
 // Função para processar comprovante de farm
-const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, deleteDelay = 60000) => {
+const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDelay = 60000) => {
     if (msg.attachments.size === 0) {
         await msg.channel.send({ content: "❌ Por favor, envie uma imagem como comprovante!" });
         return;
@@ -57,10 +30,10 @@ const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, d
         .setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
         .setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
         .addFields(
-            { name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico}` },
-            { name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda}` },
-            { name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha}` },
-            { name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente}` }
+            { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
+            { name: "📄 Seda", value: `${player.seda}/${metas.seda}` },
+            { name: "🍃 Folha", value: `${player.folha}/${metas.folha}` },
+            { name: "🌱 Casca de Semente", value: `${player.cascaSemente}/${metas.cascaSemente}` }
         )
         .setImage(`attachment://${attachment.name}`)
         .setColor("#00FF00")
@@ -70,8 +43,8 @@ const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, d
     // Calcular isenção ao atingir todas as metas
     const agora = new Date();
     const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
-    depositosAtuais.isencaoAte = isencaoAte;
-    depositosDiarios.set(interaction.user.id, depositosAtuais);
+    player.isencaoAte = isencaoAte;
+    await player.save();
 
     const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
     const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
@@ -85,7 +58,7 @@ const handleComprovanteFarm = async (msg, interaction, depositosAtuais, metas, d
 };
 
 // Função para processar pagamento em dinheiro
-const handlePagamentoDinheiro = async (msg, interaction, valor, depositosAtuais) => {
+const handlePagamentoDinheiro = async (msg, interaction, valor, player) => {
     if (msg.attachments.size === 0) {
         await msg.channel.send({ content: "❌ Por favor, envie uma imagem como comprovante!" });
         return;
@@ -112,9 +85,9 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, depositosAtuais)
     // Calcular isenção
     const agora = new Date();
     const isencaoAte = new Date(agora.getTime() + diasPagos * 24 * 60 * 60 * 1000);
-    depositosAtuais.dinheiro += valor;
-    depositosAtuais.isencaoAte = isencaoAte;
-    depositosDiarios.set(userId, depositosAtuais);
+    player.dinheiro += valor;
+    player.isencaoAte = isencaoAte;
+    await player.save();
 
     // Embed de confirmação
     const embedConfirmacao = new EmbedBuilder()
@@ -239,40 +212,37 @@ module.exports = {
                     const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
                     const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
 
-                    const depositosAtuais = depositosDiarios.get(userId) || {
-                        plastico: 0,
-                        seda: 0,
-                        folha: 0,
-                        cascaSemente: 0,
-                        comprovanteEnviado: false,
-                        linkComprovante: null,
-                        dinheiro: 0,
-                        isencaoAte: null
-                    };
+                    // Buscar ou criar o jogador no banco de dados
+                    let player = await Player.findOne({ discordId: userId });
+                    if (!player) {
+                        player = new Player({
+                            discordId: userId,
+                            username: interaction.user.username
+                        });
+                    }
 
-                    depositosAtuais.plastico += plastico;
-                    depositosAtuais.seda += seda;
-                    depositosAtuais.folha += folha;
-                    depositosAtuais.cascaSemente += cascaSemente;
-                    depositosAtuais.comprovanteEnviado = false;
-                    depositosAtuais.linkComprovante = null;
-                    depositosDiarios.set(userId, depositosAtuais);
+                    // Atualizar valores de farm
+                    player.plastico += plastico;
+                    player.seda += seda;
+                    player.folha += folha;
+                    player.cascaSemente += cascaSemente;
+                    await player.save();
 
                     const progresso = {
-                        plastico: (depositosAtuais.plastico / metas.plastico) * 100,
-                        seda: (depositosAtuais.seda / metas.seda) * 100,
-                        folha: (depositosAtuais.folha / metas.folha) * 100,
-                        cascaSemente: (depositosAtuais.cascaSemente / metas.cascaSemente) * 100
+                        plastico: (player.plastico / metas.plastico) * 100,
+                        seda: (player.seda / metas.seda) * 100,
+                        folha: (player.folha / metas.folha) * 100,
+                        cascaSemente: (player.cascaSemente / metas.cascaSemente) * 100
                     };
 
                     const embedConfirmacao = new EmbedBuilder()
                         .setTitle("✅ Itens Registrados com Sucesso!")
                         .setDescription("Seus itens foram registrados no sistema.\n\n**Por favor, envie a imagem do comprovante em até 2 minutos respondendo esta mensagem no privado do bot.**")
                         .addFields(
-                            { name: "🧪 Plástico", value: `${depositosAtuais.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`, inline: true },
-                            { name: "📄 Seda", value: `${depositosAtuais.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`, inline: true },
-                            { name: "🍃 Folha", value: `${depositosAtuais.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`, inline: true },
-                            { name: "🌱 Casca de Semente", value: `${depositosAtuais.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`, inline: true }
+                            { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`, inline: true },
+                            { name: "📄 Seda", value: `${player.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`, inline: true },
+                            { name: "🍃 Folha", value: `${player.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`, inline: true },
+                            { name: "🌱 Casca de Semente", value: `${player.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`, inline: true }
                         )
                         .setColor("#00FF00")
                         .setFooter({ text: "Sistema de Registro de Farms" })
@@ -293,18 +263,14 @@ module.exports = {
 
                         if (collected && collected.size > 0) {
                             const msg = collected.first();
-                            depositosAtuais.comprovanteEnviado = true;
-                            depositosAtuais.linkComprovante = msg.attachments.first().url;
-                            depositosDiarios.set(userId, depositosAtuais);
-
                             const todasMetasAtingidas = 
-                                depositosAtuais.plastico >= metas.plastico &&
-                                depositosAtuais.seda >= metas.seda &&
-                                depositosAtuais.folha >= metas.folha &&
-                                depositosAtuais.cascaSemente >= metas.cascaSemente;
+                                player.plastico >= metas.plastico &&
+                                player.seda >= metas.seda &&
+                                player.folha >= metas.folha &&
+                                player.cascaSemente >= metas.cascaSemente;
 
                             if (todasMetasAtingidas) {
-                                await handleComprovanteFarm(msg, interaction, depositosAtuais, metas, 60000);
+                                await handleComprovanteFarm(msg, interaction, player, metas, 60000);
                             } else {
                                 const attachment = msg.attachments.first();
                                 const embedComprovante = new EmbedBuilder()
@@ -333,16 +299,14 @@ module.exports = {
                     const userId = interaction.user.id;
                     const valor = parseInt(interaction.fields.getTextInputValue("valor-dinheiro")) || 0;
 
-                    const depositosAtuais = depositosDiarios.get(userId) || {
-                        plastico: 0,
-                        seda: 0,
-                        folha: 0,
-                        cascaSemente: 0,
-                        comprovanteEnviado: false,
-                        linkComprovante: null,
-                        dinheiro: 0,
-                        isencaoAte: null
-                    };
+                    // Buscar ou criar o jogador no banco de dados
+                    let player = await Player.findOne({ discordId: userId });
+                    if (!player) {
+                        player = new Player({
+                            discordId: userId,
+                            username: interaction.user.username
+                        });
+                    }
 
                     const embedPrivado = new EmbedBuilder()
                         .setTitle("Envie seu comprovante")
@@ -359,7 +323,7 @@ module.exports = {
 
                     if (collected && collected.size > 0) {
                         const msg = collected.first();
-                        await handlePagamentoDinheiro(msg, interaction, valor, depositosAtuais);
+                        await handlePagamentoDinheiro(msg, interaction, valor, player);
                         setTimeout(() => msg.delete().catch(() => {}), 60000);
                     } else {
                         await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });

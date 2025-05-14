@@ -1,7 +1,15 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder } = require('discord.js');
 const schedule = require('node-schedule');
 const { conectarMongo } = require("../database/connect.js");
 const { setupAgendador } = require('../agendador/agendador.js');
+const Player = require('../database/models/Player');
+
+const metas = {
+    cascaSemente: 120,
+    folha: 120,
+    seda: 120,
+    plastico: 40
+};
 
 module.exports = {
     name: Events.ClientReady,
@@ -10,25 +18,90 @@ module.exports = {
         console.log(`Ready! Logged in as ${client.user.tag}`);
         setupAgendador(client);
 
-        // Agenda as cobranças para serem enviadas todos os dias às 10:00
-        schedule.scheduleJob('0 10 * * *', async function() {
-            try {
-                const embed = {
-                    title: '⚠️ Lembrete de Farm',
-                    description: 'Você tem Farm pendente para hoje! Por favor, realize seu Farm e envie a prova usando o comando `/verificar-farm`.',
-                    color: 0xFF0000,
-                    timestamp: new Date()
-                };
-                // Implemente a lógica para enviar mensagens aqui
-            } catch (error) {
-                console.error('Erro ao enviar cobranças:', error);
-            }
-        });
-
         try {
+            console.log('MONGO_URI:', process.env.MONGO_URI);
             await conectarMongo();
+
+            // Inicializar jogadores no banco
+            const guild = client.guilds.cache.get(process.env.GUILD_ID);
+            if (guild) {
+                const members = await guild.members.fetch();
+                for (const [id, member] of members) {
+                    if (!member.user.bot) {
+                        let player = await Player.findOne({ discordId: id });
+                        if (!player) {
+                            await Player.create({
+                                discordId: id,
+                                username: member.user.username
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Reset diário à meia-noite (UTC-3 = 3h UTC)
+            schedule.scheduleJob('0 3 * * *', async function() {
+                try {
+                    await Player.updateMany(
+                        {},
+                        {
+                            plastico: 0,
+                            seda: 0,
+                            folha: 0,
+                            cascaSemente: 0,
+                            lastReset: new Date()
+                        }
+                    );
+                    console.log('Valores de farm resetados para todos os jogadores.');
+                } catch (error) {
+                    console.error('Erro ao resetar valores diários:', error);
+                }
+            });
+
+            // Notificação às 23h (UTC-3 = 2h UTC)
+            schedule.scheduleJob('47 10 * * *', async function() {
+                try {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Início do dia
+
+                    // Buscar jogadores que não bateram a meta e não estão isentos
+                    const players = await Player.find({
+                        $or: [
+                            { plastico: { $lt: metas.plastico } },
+                            { seda: { $lt: metas.seda } },
+                            { folha: { $lt: metas.folha } },
+                            { cascaSemente: { $lt: metas.cascaSemente } }
+                        ],
+                        lastReset: { $gte: today } // Apenas os que foram resetados hoje
+                    });
+
+                    const nonCompliantPlayers = players.filter(player => {
+                        const isento = player.isencaoAte && new Date(player.isencaoAte) > new Date();
+                        return !isento;
+                    });
+
+                    if (nonCompliantPlayers.length > 0) {
+                        const embed = new EmbedBuilder()
+                            .setTitle('⚠️ Aviso: Jogadores sem Meta')
+                            .setDescription('Os seguintes jogadores não bateram a meta hoje:\n' +
+                                nonCompliantPlayers.map(p => `- <@${p.discordId}> (${p.username})`).join('\n'))
+                            .setColor(0xFF0000)
+                            .setTimestamp();
+
+                        const channel = client.channels.cache.get('1371460411521503332'); // Substitua pelo ID do canal
+                        if (channel) {
+                            await channel.send({ embeds: [embed] });
+                        }
+                    } else {
+                        console.log('Nenhum jogador sem meta hoje às 23h.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao processar agendamento:', error);
+                }
+            });
+
         } catch (error) {
-            console.error('❌ Falha ao conectar ao MongoDB, mas o bot continuará funcionando:', error);
+            console.error('❌ Falha ao conectar ao MongoDB ou inicializar jogadores:', error);
         }
     },
 };
