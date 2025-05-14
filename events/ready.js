@@ -42,7 +42,7 @@ module.exports = {
             }
 
             // Reset diário ajustado para 11:30 AM (UTC-3 = 14:30 UTC)
-            schedule.scheduleJob('49 14 * * *', async function() {
+            schedule.scheduleJob('01 15 * * *', async function() {
                 try {
                     const updatedCount = await Player.updateMany(
                         {},
@@ -61,7 +61,7 @@ module.exports = {
             });
 
             // Notificação ajustada para 11:31 AM (UTC-3 = 14:31 UTC)
-            schedule.scheduleJob('52 14 * * *', async function() {
+            schedule.scheduleJob('59 14 * * *', async function() {
                 try {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0); // Início do dia
@@ -97,7 +97,7 @@ module.exports = {
                         const channelId = '1372062603563765760'; // ID do canal notificacoes-membros
                         const channel = client.channels.cache.get(channelId);
                         if (channel) {
-                            await channel.send({ embeds: [embed] });
+                            await channel.send({content: `Atenção <@&1370136458278604822>!`, embeds: [embed] });
                             console.log(`Notificação enviada ao canal ${channelId} com sucesso.`);
                         } else {
                             console.error(`Canal ${channelId} não encontrado. Verifique o ID ou permissões do bot.`);
