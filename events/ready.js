@@ -41,8 +41,8 @@ module.exports = {
                 console.error('Guild não encontrada. Verifique o GUILD_ID no .env.');
             }
 
-            // Reset diário ajustado para 11:17 AM (UTC-3 = 14:17 UTC)
-            schedule.scheduleJob('17 11 * * *', async function() {
+            // Reset diário ajustado para 11:30 AM (UTC-3 = 14:30 UTC)
+            schedule.scheduleJob('30 11 * * *', async function() {
                 try {
                     const updatedCount = await Player.updateMany(
                         {},
@@ -60,12 +60,12 @@ module.exports = {
                 }
             });
 
-            // Notificação ajustada para 11:18 AM (UTC-3 = 14:18 UTC)
-            schedule.scheduleJob('18 11 * * *', async function() {
+            // Notificação ajustada para 11:31 AM (UTC-3 = 14:31 UTC)
+            schedule.scheduleJob('31 11 * * *', async function() {
                 try {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0); // Início do dia
-                    console.log('Buscando jogadores que não bateram a meta...');
+                    console.log('Iniciando busca por jogadores que não bateram a meta...');
 
                     // Buscar jogadores que não bateram a meta e não estão isentos
                     const players = await Player.find({
@@ -77,14 +77,14 @@ module.exports = {
                         ],
                         lastReset: { $gte: today }
                     });
-                    console.log(`Encontrados ${players.length} jogadores que não bateram a meta.`);
+                    console.log(`Total de jogadores encontrados que não bateram a meta: ${players.length}`);
 
                     const nonCompliantPlayers = players.filter(player => {
                         const isento = player.isencaoAte && new Date(player.isencaoAte) > new Date();
-                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento}`);
+                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento} - Valores: plastico=${player.plastico}, seda=${player.seda}, folha=${player.folha}, cascaSemente=${player.cascaSemente}`);
                         return !isento;
                     });
-                    console.log(`Após filtro de isenção, ${nonCompliantPlayers.length} jogadores não conformes.`);
+                    console.log(`Jogadores não conformes após filtro de isenção: ${nonCompliantPlayers.length}`);
 
                     if (nonCompliantPlayers.length > 0) {
                         const embed = new EmbedBuilder()
@@ -94,15 +94,16 @@ module.exports = {
                             .setColor(0xFF0000)
                             .setTimestamp();
 
-                        const channel = client.channels.cache.get('1371460411521503332');
+                        const channelId = '1372062603563765760'; // ID do canal notificacoes-membros
+                        const channel = client.channels.cache.get(channelId);
                         if (channel) {
                             await channel.send({ embeds: [embed] });
-                            console.log('Notificação enviada ao canal 1371460411521503332.');
+                            console.log(`Notificação enviada ao canal ${channelId} com sucesso.`);
                         } else {
-                            console.error('Canal 1371460411521503332 não encontrado.');
+                            console.error(`Canal ${channelId} não encontrado. Verifique o ID ou permissões do bot.`);
                         }
                     } else {
-                        console.log('Nenhum jogador sem meta hoje às 11:18 AM.');
+                        console.log('Nenhum jogador sem meta hoje às 11:31 AM.');
                     }
                 } catch (error) {
                     console.error('Erro ao processar agendamento:', error);
