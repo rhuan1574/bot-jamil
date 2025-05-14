@@ -38,8 +38,8 @@ module.exports = {
                 }
             }
 
-            // Reset diário à meia-noite (UTC-3 = 3h UTC)
-            schedule.scheduleJob('0 3 * * *', async function() {
+            // Reset diário ajustado para 10:51 AM (UTC-3 = 13:51 UTC)
+            schedule.scheduleJob('51 10 * * *', async function() {
                 try {
                     await Player.updateMany(
                         {},
@@ -57,8 +57,8 @@ module.exports = {
                 }
             });
 
-            // Notificação às 23h (UTC-3 = 2h UTC)
-            schedule.scheduleJob('47 10 * * *', async function() {
+            // Notificação ajustada para 10:52 AM (UTC-3 = 13:52 UTC)
+            schedule.scheduleJob('52 10 * * *', async function() {
                 try {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0); // Início do dia
@@ -87,12 +87,12 @@ module.exports = {
                             .setColor(0xFF0000)
                             .setTimestamp();
 
-                        const channel = client.channels.cache.get('1371460411521503332'); // Substitua pelo ID do canal
+                        const channel = client.channels.cache.get('1371460411521503332');
                         if (channel) {
                             await channel.send({ embeds: [embed] });
                         }
                     } else {
-                        console.log('Nenhum jogador sem meta hoje às 23h.');
+                        console.log('Nenhum jogador sem meta hoje às 10:52 AM.');
                     }
                 } catch (error) {
                     console.error('Erro ao processar agendamento:', error);
