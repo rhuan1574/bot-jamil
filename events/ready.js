@@ -4,9 +4,9 @@ const schedule = require('node-schedule');
 module.exports = {
 	name: Events.ClientReady,
 	once: true,
-	execute(client) {
+	async execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
-
+		await conectarMongo();
 		// Agenda as cobranças para serem enviadas todos os dias às 10:00
 		schedule.scheduleJob('0 10 * * *', async function() {
 			try {

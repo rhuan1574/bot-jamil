@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.14.3",
     "node-cron": "^4.0.3",
     "node-schedule": "^2.1.1",
     "tesseract.js": "^5.0.4"

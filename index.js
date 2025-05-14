@@ -3,6 +3,9 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { Token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
+const conectarMongoDB = require('./database/connect.js');
+require('dotenv').config();
+
 
 // Create a new client instance with all necessary intents
 const client = new Client({ 
