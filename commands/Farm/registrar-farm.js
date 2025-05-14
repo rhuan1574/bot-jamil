@@ -34,7 +34,6 @@ module.exports = {
         await interaction.reply({ 
             embeds: [embed], 
             components: [row],
-            ephemeral: true // Faz a mensagem aparecer apenas para quem executou o comando
         });
     }
 }
