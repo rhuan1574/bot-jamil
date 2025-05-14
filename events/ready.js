@@ -19,7 +19,6 @@ module.exports = {
         setupAgendador(client);
 
         try {
-            console.log('MONGO_URI:', process.env.MONGO_URI);
             await conectarMongo();
 
             // Inicializar jogadores no banco
