@@ -22,9 +22,6 @@ const playerSchema = new mongoose.Schema({
     dinheiro: { type: Number, default: 0 },
     isencaoAte: { type: Date },
     lastReset: { type: Date },
-    endereco: { type: String }, // Farm address
-    contato: { type: String }, // Contact phone number
-    horario: { type: String } // Operating hours
 });
 
 module.exports = mongoose.model('Player', playerSchema);
