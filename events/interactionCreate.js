@@ -102,7 +102,7 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, player) => {
     await Promise.all([
         msg.channel.send({ embeds: [embedConfirmacao], files: [attachment] }),
         canalLogs?.send({ embeds: [embedConfirmacao], files: [attachment] }),
-        canalNotificacao?.send({ content: `<@&1370136458278604822>`, embeds: [embedConfirmacao], files: [attachment] })
+        canalNotificacao?.send({ embeds: [embedConfirmacao], files: [attachment] })
     ]);
 
     // Confirmação no canal original
