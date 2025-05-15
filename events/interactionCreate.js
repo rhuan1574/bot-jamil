@@ -28,7 +28,7 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
     const attachment = msg.attachments.first();
     const embedMetaComprovante = new EmbedBuilder()
         .setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
-        .setDescription("Você atingiu todas as metas diárias! Os valores serão resetados à meia-noite.")
+        .setDescription(`O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`)
         .addFields(
             { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
             { name: "📄 Seda", value: `${player.seda}/${metas.seda}` },
