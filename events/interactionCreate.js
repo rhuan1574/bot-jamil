@@ -201,7 +201,8 @@ module.exports = {
                 console.error('Erro ao processar interação do botão:', error);
                 await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
             }
-           if (customId === "registro") {
+}
+if (customId === "registro") {
   const roleName = "┃Membros";
   const member = interaction.member;
   const role = member.roles.cache.find((r) => r.name === roleName);
@@ -252,8 +253,6 @@ module.exports = {
     await interaction.showModal(modal);
   }
 }
-}
-
 
         if (interaction.isModalSubmit()) {
             if (interaction.customId === "modal-farm") {
