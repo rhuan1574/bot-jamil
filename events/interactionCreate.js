@@ -46,8 +46,8 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
     player.isencaoAte = isencaoAte;
     await player.save();
 
-    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
-    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
+    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
     await Promise.all([
         msg.channel.send({ content: "Imagem recebida com sucesso!", embeds: [embedMetaComprovante], files: [attachment] }),
         canalLogs?.send({ embeds: [embedMetaComprovante], files: [attachment] }),
@@ -357,7 +357,7 @@ module.exports = {
                     const embedPrivado = new EmbedBuilder()
                         .setTitle("Envie seu comprovante")
                         .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem no privado. Você tem até 2 minutos.")
-                        .setColor("#0099FF");
+                        .setColor("#0099FF");p
 
                     await interaction.reply({ content: "✅ Valor registrado! Envie a imagem do comprovante no privado.", ephemeral: true });
 
