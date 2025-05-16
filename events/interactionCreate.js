@@ -47,8 +47,8 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
     player.isencaoAte = isencaoAte;
     await player.save();
 
-    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
-    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
+    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
     await Promise.all([
         msg.channel.send({ content: "Imagem recebida com sucesso!", embeds: [embedMetaComprovante], files: [attachment] }),
         canalLogs?.send({ embeds: [embedMetaComprovante], files: [attachment] }),

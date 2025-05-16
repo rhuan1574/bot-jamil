@@ -94,7 +94,7 @@ module.exports = {
                             .setColor(0xFF0000)
                             .setTimestamp();
 
-                        const channelId = '1372934719620124735'; // ID do canal notificacoes-membros
+                        const channelId = '1372939105813397555'; // ID do canal notificacoes-membros
                         const channel = client.channels.cache.get(channelId);
                         if (channel) {
                             await channel.send({content: `Atenção <@&1292671789222334514>!`, embeds: [embed] });

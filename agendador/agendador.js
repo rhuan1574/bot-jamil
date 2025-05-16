@@ -5,8 +5,8 @@ const { EmbedBuilder } = require('discord.js');
 function setupAgendador(client) {
     // Canal onde os lembretes serão enviados
     const getCanais = (guild) => ({
-        membros: guild.channels.cache.find(ch => ch.name === 'notificacoes-membros'),
-        gerentes: guild.channels.cache.find(ch => ch.name === 'notificacoes-gerentes')
+        membros: guild.channels.cache.find(ch => ch.name === '📌・notificacoes-membros'),
+        gerentes: guild.channels.cache.find(ch => ch.name === '📌・notificacoes-gerentes')
     });
 
     // Tarefa das 15h - Lembrete para membros
