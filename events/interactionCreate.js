@@ -193,65 +193,63 @@ module.exports = {
                         modalFarm.addComponents(inputs.map(input => new ActionRowBuilder().addComponents(input)));
                         await interaction.showModal(modalFarm);
                         break;
+                         case "registro":
+        const roleName = "┃Membros";
+        const member = interaction.member;
+        const role = member.roles.cache.find((r) => r.name === roleName);
 
-                    default:
-                        await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
+        if (role) {
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: "Não foi possível se registrar, pois você já possui o cargo de Membro.",
+                    ephemeral: true,
+                });
+            }
+            return;
+        }
+
+        const modal = new ModalBuilder()
+            .setCustomId("modal-registro")
+            .setTitle("Registro do Usuário");
+
+        const inputsModal = [
+            {
+                id: "nome_prsn",
+                label: "Nome do personagem (iniciais em maiúscula):",
+            },
+            { id: "id_prsn", label: "ID do personagem:" },
+            {
+                id: "nome",
+                label: "Seu nome real (iniciais em maiúscula):",
+            },
+            {
+                id: "nome_indicacao",
+                label: "Nome de quem indicou (iniciais em maiúscula):",
+            },
+        ].map(({ id, label }) =>
+            new TextInputBuilder()
+                .setCustomId(id)
+                .setLabel(label)
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+        );
+
+        modal.addComponents(
+            ...inputsModal.map((input) => new ActionRowBuilder().addComponents(input))
+        );
+
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.showModal(modal);
+        }
+        break;
+
+    default:
+        await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
                 }
             } catch (error) {
                 console.error('Erro ao processar interação do botão:', error);
                 await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
             }
-}
-if (customId === "registro") {
-  const roleName = "┃Membros";
-  const member = interaction.member;
-  const role = member.roles.cache.find((r) => r.name === roleName);
-
-  if (role) {
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
-        content:
-          "Não foi possível se registrar, pois você já possui o cargo de Membro.",
-        flags: 64, // Isso marca a mensagem como ephemeral
-      });
-    }
-    return;
-  }
-
-  const modal = new ModalBuilder()
-    .setCustomId("modal-registro")
-    .setTitle("Registro do Usuário");
-
-  const inputs = [
-    {
-      id: "nome_prsn",
-      label: "Nome do personagem (iniciais em maiúscula):",
-    },
-    { id: "id_prsn", label: "ID do personagem:" },
-    {
-      id: "nome",
-      label: "Seu nome real (iniciais em maiúscula):",
-    },
-    {
-      id: "nome_indicacao",
-      label: "Nome de quem indicou (iniciais em maiúscula):",
-    },
-  ].map(({ id, label }) =>
-    new TextInputBuilder()
-      .setCustomId(id)
-      .setLabel(label)
-      .setStyle(TextInputStyle.Short)
-      .setRequired(true)
-  );
-
-  modal.addComponents(
-    ...inputs.map((input) => new ActionRowBuilder().addComponents(input))
-  );
-
-  // Garante que nenhuma resposta foi feita ainda
-  if (!interaction.replied && !interaction.deferred) {
-    await interaction.showModal(modal);
-  }
 }
 
         if (interaction.isModalSubmit()) {
