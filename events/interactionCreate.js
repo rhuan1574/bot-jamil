@@ -98,8 +98,8 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, player) => {
         .setColor("#00FF00")
         .setTimestamp();
 
-    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "logs-farm");
-    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "notificacoes-gerentes");
+    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
     await Promise.all([
         msg.channel.send({ embeds: [embedConfirmacao], files: [attachment] }),
         canalLogs?.send({ embeds: [embedConfirmacao], files: [attachment] }),
