@@ -1,5 +1,6 @@
-const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, WebhookClient } = require('discord.js');
 const Player = require('../database/models/Player');
+const WebhookClientRegistro = new WebhookClient({ id: process.env.ID_WEBHOOK, token: process.env.TOKEN_WEBHOOK})
 
 // Sistema de metas e controle diário
 const metas = {
@@ -54,7 +55,7 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
         canalNotificacao?.send({ content: "<@&1370136458278604822>", embeds: [embedMetaComprovante], files: [attachment] })
     ]);
 
-    setTimeout(() => msg.delete().catch(() => {}), deleteDelay);
+    setTimeout(() => msg.delete().catch(() => { }), deleteDelay);
 };
 
 // Função para processar pagamento em dinheiro
@@ -193,64 +194,64 @@ module.exports = {
                         modalFarm.addComponents(inputs.map(input => new ActionRowBuilder().addComponents(input)));
                         await interaction.showModal(modalFarm);
                         break;
-                         case "registro":
-        const roleName = "┃Membros";
-        const member = interaction.member;
-        const role = member.roles.cache.find((r) => r.name === roleName);
+                    case "registro":
+                        const roleName = "┃Membros";
+                        const member = interaction.member;
+                        const role = member.roles.cache.find((r) => r.name === roleName);
 
-        if (role) {
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({
-                    content: "Não foi possível se registrar, pois você já possui o cargo de Membro.",
-                    ephemeral: true,
-                });
-            }
-            return;
-        }
+                        if (role) {
+                            if (!interaction.replied && !interaction.deferred) {
+                                await interaction.reply({
+                                    content: "Não foi possível se registrar, pois você já possui o cargo de Membro.",
+                                    ephemeral: true,
+                                });
+                            }
+                            return;
+                        }
 
-        const modal = new ModalBuilder()
-            .setCustomId("modal-registro")
-            .setTitle("Registro do Usuário");
+                        const modal = new ModalBuilder()
+                            .setCustomId("modal-registro")
+                            .setTitle("Registro do Usuário");
 
-        const inputsModal = [
-            {
-                id: "nome_prsn",
-                label: "Nome do personagem (iniciais em maiúscula):",
-            },
-            { id: "id_prsn", label: "ID do personagem:" },
-            {
-                id: "nome",
-                label: "Seu nome real (iniciais em maiúscula):",
-            },
-            {
-                id: "nome_indicacao",
-                label: "Nome de quem indicou (iniciais em maiúscula):",
-            },
-        ].map(({ id, label }) =>
-            new TextInputBuilder()
-                .setCustomId(id)
-                .setLabel(label)
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-        );
+                        const inputsModal = [
+                            {
+                                id: "nome_prsn",
+                                label: "Nome do personagem (iniciais em maiúscula):",
+                            },
+                            { id: "id_prsn", label: "ID do personagem:" },
+                            {
+                                id: "nome",
+                                label: "Seu nome real (iniciais em maiúscula):",
+                            },
+                            {
+                                id: "nome_indicacao",
+                                label: "Nome de quem indicou (iniciais em maiúscula):",
+                            },
+                        ].map(({ id, label }) =>
+                            new TextInputBuilder()
+                                .setCustomId(id)
+                                .setLabel(label)
+                                .setStyle(TextInputStyle.Short)
+                                .setRequired(true)
+                        );
 
-        modal.addComponents(
-            ...inputsModal.map((input) => new ActionRowBuilder().addComponents(input))
-        );
+                        modal.addComponents(
+                            ...inputsModal.map((input) => new ActionRowBuilder().addComponents(input))
+                        );
 
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.showModal(modal);
-        }
-        break;
+                        if (!interaction.replied && !interaction.deferred) {
+                            await interaction.showModal(modal);
+                        }
+                        break;
 
-    default:
-        await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
+                    default:
+                        await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
                 }
             } catch (error) {
                 console.error('Erro ao processar interação do botão:', error);
                 await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
             }
-}
+        }
 
         if (interaction.isModalSubmit()) {
             if (interaction.customId === "modal-farm") {
@@ -312,7 +313,7 @@ module.exports = {
 
                         if (collected && collected.size > 0) {
                             const msg = collected.first();
-                            const todasMetasAtingidas = 
+                            const todasMetasAtingidas =
                                 player.plastico >= metas.plastico &&
                                 player.seda >= metas.seda &&
                                 player.folha >= metas.folha &&
@@ -329,7 +330,7 @@ module.exports = {
                                     .setColor("#00FF00")
                                     .setTimestamp();
                                 await dm.send({ embeds: [embedComprovante], files: [attachment] });
-                                setTimeout(() => msg.delete().catch(() => {}), 60000);
+                                setTimeout(() => msg.delete().catch(() => { }), 60000);
                             }
                         } else {
                             await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
@@ -373,7 +374,7 @@ module.exports = {
                     if (collected && collected.size > 0) {
                         const msg = collected.first();
                         await handlePagamentoDinheiro(msg, interaction, valor, player);
-                        setTimeout(() => msg.delete().catch(() => {}), 60000);
+                        setTimeout(() => msg.delete().catch(() => { }), 60000);
                     } else {
                         await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
                     }
@@ -381,6 +382,73 @@ module.exports = {
                     console.error('Erro ao processar modal de dinheiro:', error);
                     await interaction.reply({ content: "❌ Ocorreu um erro ao processar seu pagamento!", ephemeral: true });
                 }
+            }
+            if (customId === "modal-registro") {
+                await interaction.deferReply({ flags: 64 });
+
+                const nomeRegistro = interaction.fields.getTextInputValue("nome_prsn");
+                const idRegistro = interaction.fields.getTextInputValue("id_prsn");
+                const nomeReal = interaction.fields.getTextInputValue("nome");
+                const nomeIndicacao =
+                    interaction.fields.getTextInputValue("nome_indicacao");
+                const membro = interaction.guild.members.cache.get(interaction.user.id);
+
+                if (!membro) {
+                    return interaction.editReply({
+                        content: "❌ Membro não encontrado no servidor.",
+                    });
+                }
+
+                try {
+                    await membro.setNickname(`${nomeRegistro} | ${idRegistro}`);
+                } catch (error) {
+                    console.error(error);
+                    return interaction.editReply({
+                        content:
+                            "❌ Não foi possível alterar o apelido. Verifique minhas permissões.",
+                    });
+                }
+
+                const cargo = interaction.guild.roles.cache.find(
+                    (role) => role.name === "┃Membros"
+                );
+
+                if (cargo) {
+                    try {
+                        await membro.roles.add(cargo);
+                    } catch (error) {
+                        console.error(error);
+                        return interaction.editReply({
+                            content: "❌ Não foi possível atribuir o cargo.",
+                        });
+                    }
+                }
+
+                interaction.editReply({
+                    content: `✅ O apelido foi atualizado para: ${nomeRegistro} | ${idRegistro} e recebeu o cargo de ┃Membros`,
+                });
+
+                const embed = new EmbedBuilder()
+                    .setColor("#FF0000")
+                    .setTitle("Novo Registro de Usuário")
+                    .setImage(
+                        "https://i.ibb.co/CBVRkXJ/BENNYS-TUNING-removebg-preview.png"
+                    )
+                    .addFields([
+                        { name: "Nome do Personagem", value: nomeRegistro },
+                        { name: "ID do Personagem", value: idRegistro },
+                        { name: "Nome Real", value: nomeReal },
+                        { name: "Nome de Indicação", value: nomeIndicacao },
+                    ])
+                    .setFooter({
+                        text: `Registrado por ${interaction.user.tag}`,
+                        iconURL: interaction.user.displayAvatarURL(),
+                    });
+
+                WebhookClientRegistro.send({
+                    content: tagMembers ? `${membro} foi registrado!` : "",
+                    embeds: [embed],
+                });
             }
         }
     }
