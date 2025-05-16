@@ -202,7 +202,7 @@ module.exports = {
                 await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
             }
             if (customId === "registro") {
-        const roleName = "🧰 | Membro Benny's"; // Nome do cargo
+        const roleName = "┃Membros"; // Nome do cargo
         const member = interaction.member; // Obtém o membro que usou a interação
 
         // Verifica se o usuário já tem o cargo
