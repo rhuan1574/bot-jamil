@@ -246,7 +246,7 @@ module.exports = {
         modal.addComponents(
           ...inputs.map((input) => new ActionRowBuilder().addComponents(input))
         );
-        await interaction.showModal(modal); }
+         interaction.showModal(modal); }
         }
 
         if (interaction.isModalSubmit()) {
