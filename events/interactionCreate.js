@@ -10,7 +10,7 @@ const metas = {
 };
 
 // Valor diário em dinheiro
-const VALOR_DIARIO = 16000;
+const VALOR_DIARIO = 25000;
 
 // Função para verificar isenção de cobrança
 function isIsento(player) {
