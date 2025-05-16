@@ -362,7 +362,7 @@ module.exports = {
                     const embedPrivado = new EmbedBuilder()
                         .setTitle("Envie seu comprovante")
                         .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem no privado. Você tem até 2 minutos.")
-                        .setColor("#0099FF");p
+                        .setColor("#0099FF");
 
                     await interaction.reply({ content: "✅ Valor registrado! Envie a imagem do comprovante no privado.", ephemeral: true });
 
