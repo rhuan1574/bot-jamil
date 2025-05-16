@@ -201,53 +201,59 @@ module.exports = {
                 console.error('Erro ao processar interação do botão:', error);
                 await interaction.reply({ content: "❌ Ocorreu um erro ao processar sua solicitação!", ephemeral: true });
             }
-            if (customId === "registro") {
-        const roleName = "┃Membros"; // Nome do cargo
-        const member = interaction.member; // Obtém o membro que usou a interação
+           if (customId === "registro") {
+  const roleName = "┃Membros";
+  const member = interaction.member;
+  const role = member.roles.cache.find((r) => r.name === roleName);
 
-        // Verifica se o usuário já tem o cargo
-        const role = member.roles.cache.find((r) => r.name === roleName);
+  if (role) {
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content:
+          "Não foi possível se registrar, pois você já possui o cargo de Membro.",
+        flags: 64, // Isso marca a mensagem como ephemeral
+      });
+    }
+    return;
+  }
 
-        if (role) {
-          return await interaction.reply({
-            content:
-              "Não foi possível se registrar, pois você já possui o cargo de Membro.",
-            flags: 64,
-          });
-        }
+  const modal = new ModalBuilder()
+    .setCustomId("modal-registro")
+    .setTitle("Registro do Usuário");
 
-        // Se o usuário não tem o cargo, mostra o modal diretamente
-        const modal = new ModalBuilder()
-          .setCustomId("modal-registro")
-          .setTitle("Registro do Usuário");
+  const inputs = [
+    {
+      id: "nome_prsn",
+      label: "Nome do personagem (iniciais em maiúscula):",
+    },
+    { id: "id_prsn", label: "ID do personagem:" },
+    {
+      id: "nome",
+      label: "Seu nome real (iniciais em maiúscula):",
+    },
+    {
+      id: "nome_indicacao",
+      label: "Nome de quem indicou (iniciais em maiúscula):",
+    },
+  ].map(({ id, label }) =>
+    new TextInputBuilder()
+      .setCustomId(id)
+      .setLabel(label)
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true)
+  );
 
-        const inputs = [
-          {
-            id: "nome_prsn",
-            label: "Nome do personagem (iniciais em maiúscula):",
-          },
-          { id: "id_prsn", label: "ID do personagem:" },
-          {
-            id: "nome",
-            label: "Seu nome real (iniciais em maiúscula):",
-          },
-          {
-            id: "nome_indicacao",
-            label: "Nome de quem indicou (iniciais em maiúscula):",
-          },
-        ].map(({ id, label }) =>
-          new TextInputBuilder()
-            .setCustomId(id)
-            .setLabel(label)
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true)
-        );
+  modal.addComponents(
+    ...inputs.map((input) => new ActionRowBuilder().addComponents(input))
+  );
 
-        modal.addComponents(
-          ...inputs.map((input) => new ActionRowBuilder().addComponents(input))
-        );
-         interaction.showModal(modal); }
-        }
+  // Garante que nenhuma resposta foi feita ainda
+  if (!interaction.replied && !interaction.deferred) {
+    await interaction.showModal(modal);
+  }
+}
+}
+
 
         if (interaction.isModalSubmit()) {
             if (interaction.customId === "modal-farm") {
