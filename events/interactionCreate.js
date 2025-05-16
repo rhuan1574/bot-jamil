@@ -254,6 +254,7 @@ module.exports = {
         }
 
         if (interaction.isModalSubmit()) {
+            const { customId } = interaction;
             if (interaction.customId === "modal-farm") {
                 try {
                     const userId = interaction.user.id;
