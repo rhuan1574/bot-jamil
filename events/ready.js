@@ -42,7 +42,7 @@ module.exports = {
             }
 
             // Reset diário ajustado para 11:30 AM (UTC-3 = 14:30 UTC)
-            schedule.scheduleJob('15 10 * * *', async function() {
+            schedule.scheduleJob('00 00 * * *', async function() {
                 try {
                     const updatedCount = await Player.updateMany(
                         {},
@@ -61,7 +61,7 @@ module.exports = {
             });
 
             // Notificação ajustada para 11:31 AM (UTC-3 = 14:31 UTC)
-            schedule.scheduleJob('20 10 * * *', async function() {
+            schedule.scheduleJob('00 23 * * *', async function() {
                 try {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0); // Início do dia

@@ -10,7 +10,7 @@ function setupAgendador(client) {
     });
 
     // Tarefa das 15h - Lembrete para membros
-    schedule.scheduleJob('52 09 * * *', async () => {
+    schedule.scheduleJob('00 15 * * *', async () => {
         console.log(`[15h] Tarefa executada às ${new Date().toLocaleString()}`);
         client.guilds.cache.forEach(guild => {
             const { membros } = getCanais(guild);
@@ -30,7 +30,7 @@ function setupAgendador(client) {
     });
 
     // Tarefa das 23h - Relatório para gerentes
-    schedule.scheduleJob('54 09 * * *', async () => {
+    schedule.scheduleJob('00 23 * * *', async () => {
         console.log(`[23h] Tarefa executada às ${new Date().toLocaleString()}`);
         client.guilds.cache.forEach(guild => {
             const { gerentes } = getCanais(guild);
