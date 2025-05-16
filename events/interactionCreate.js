@@ -447,7 +447,7 @@ module.exports = {
                     });
 
                 WebhookClientRegistro.send({
-                    content: tagMembers ? `${membro} foi registrado!` : "",
+                    content: `${membro} foi registrado!`,
                     embeds: [embed],
                 });
             }
