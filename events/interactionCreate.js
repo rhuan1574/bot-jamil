@@ -51,7 +51,6 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
     const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
     await Promise.all([
         msg.channel.send({ content: "Imagem recebida com sucesso!", embeds: [embedMetaComprovante], files: [attachment] }),
-        canalLogs?.send({ embeds: [embedMetaComprovante], files: [attachment] }),
         canalNotificacao?.send({ content: "<@&1292671789222334514>", embeds: [embedMetaComprovante], files: [attachment] })
     ]);
 
