@@ -16,7 +16,7 @@ function setupAgendador(client) {
             const { membros } = getCanais(guild);
             if (membros) {
                 membros.send({
-                    content: '<@&1370136458265886904>',
+                    content: '<@&1115002717434298530>',
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('🕒 Lembrete das 15h')
@@ -36,7 +36,7 @@ function setupAgendador(client) {
             const { gerentes } = getCanais(guild);
             if (gerentes) {
                 gerentes.send({
-                    content: '<@&1370136458278604822>',
+                    content: '<@&1292671789222334514>',
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('📊 Relatório das 23h')

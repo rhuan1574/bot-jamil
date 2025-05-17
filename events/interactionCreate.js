@@ -432,9 +432,6 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor("#FF0000")
                     .setTitle("Novo Registro de Usuário")
-                    .setImage(
-                        "https://i.ibb.co/CBVRkXJ/BENNYS-TUNING-removebg-preview.png"
-                    )
                     .addFields([
                         { name: "Nome do Personagem", value: nomeRegistro },
                         { name: "ID do Personagem", value: idRegistro },
