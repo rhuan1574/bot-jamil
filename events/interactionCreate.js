@@ -87,6 +87,7 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, player) => {
     const isencaoAte = new Date(agora.getTime() + diasPagos * 24 * 60 * 60 * 1000);
     player.dinheiro += valor;
     player.isencaoAte = isencaoAte;
+    player.lastChecked = new Date();
     await player.save();
 
     // Embed de confirmação
