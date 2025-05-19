@@ -254,198 +254,177 @@ module.exports = {
 
         if (interaction.isModalSubmit()) {
             const { customId } = interaction;
-            if (interaction.customId === "modal-farm") {
-                try {
-                    const userId = interaction.user.id;
-                    const plastico = parseInt(interaction.fields.getTextInputValue("plastico")) || 0;
-                    const seda = parseInt(interaction.fields.getTextInputValue("seda")) || 0;
-                    const folha = parseInt(interaction.fields.getTextInputValue("folha")) || 0;
-                    const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente")) || 0;
-
-                    // Buscar ou criar o jogador no banco de dados
-                    let player = await Player.findOne({ discordId: userId });
-                    if (!player) {
-                        player = new Player({
-                            discordId: userId,
-                            username: interaction.user.username
-                        });
-                    }
-
-                    // Atualizar valores de farm
-                    player.plastico += plastico;
-                    player.seda += seda;
-                    player.folha += folha;
-                    player.cascaSemente += cascaSemente;
-                    await player.save();
-
-                    const progresso = {
-                        plastico: (player.plastico / metas.plastico) * 100,
-                        seda: (player.seda / metas.seda) * 100,
-                        folha: (player.folha / metas.folha) * 100,
-                        cascaSemente: (player.cascaSemente / metas.cascaSemente) * 100
-                    };
-
-                    const embedConfirmacao = new EmbedBuilder()
-                        .setTitle("✅ Itens Registrados com Sucesso!")
-                        .setDescription("Seus itens foram registrados no sistema.\n\n**Por favor, envie a imagem do comprovante em até 2 minutos respondendo esta mensagem no privado do bot.**")
-                        .addFields(
-                            { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico} (${progresso.plastico.toFixed(1)}%)`, inline: true },
-                            { name: "📄 Seda", value: `${player.seda}/${metas.seda} (${progresso.seda.toFixed(1)}%)`, inline: true },
-                            { name: "🍃 Folha", value: `${player.folha}/${metas.folha} (${progresso.folha.toFixed(1)}%)`, inline: true },
-                            { name: "🌱 Casca de Semente", value: `${player.cascaSemente}/${metas.cascaSemente} (${progresso.cascaSemente.toFixed(1)}%)`, inline: true }
-                        )
-                        .setColor("#00FF00")
-                        .setFooter({ text: "Sistema de Registro de Farms" })
-                        .setTimestamp();
-
-                    await interaction.reply({ embeds: [embedConfirmacao], ephemeral: true });
-
-                    try {
-                        const embedPrivado = new EmbedBuilder()
-                            .setTitle("Envie seu comprovante")
-                            .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem. Você tem até 2 minutos.")
-                            .setColor("#0099FF");
-                        const dm = await interaction.user.createDM();
-                        await dm.send({ embeds: [embedPrivado] });
-
-                        const filter = m => m.author.id === userId && m.attachments.size > 0;
-                        const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
-
-                        if (collected && collected.size > 0) {
-                            const msg = collected.first();
-                            const todasMetasAtingidas =
-                                player.plastico >= metas.plastico &&
-                                player.seda >= metas.seda &&
-                                player.folha >= metas.folha &&
-                                player.cascaSemente >= metas.cascaSemente;
-
-                            if (todasMetasAtingidas) {
-                                await handleComprovanteFarm(msg, interaction, player, metas, 60000);
-                            } else {
-                                const attachment = msg.attachments.first();
-                                const embedComprovante = new EmbedBuilder()
-                                    .setTitle("✅ Comprovante Recebido")
-                                    .setDescription("Seu comprovante foi registrado com sucesso!")
-                                    .setImage(`attachment://${attachment.name}`)
-                                    .setColor("#00FF00")
-                                    .setTimestamp();
-                                await dm.send({ embeds: [embedComprovante], files: [attachment] });
-                                setTimeout(() => msg.delete().catch(() => { }), 60000);
-                            }
-                        } else {
-                            await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
+            try {
+                switch (customId) {
+                    case "modal-dinheiro":
+                        const valorDinheiro = parseInt(interaction.fields.getTextInputValue("valor-dinheiro"));
+                        if (isNaN(valorDinheiro)) {
+                            await interaction.reply({ content: "❌ Valor inválido! Por favor, digite um número.", ephemeral: true });
+                            return;
                         }
-                    } catch (err) {
-                        await interaction.user.send({ content: "❌ Não foi possível abrir o privado. Ative suas DMs para enviar o comprovante." });
-                    }
-                } catch (error) {
-                    console.error('Erro ao processar modal:', error);
-                    await interaction.reply({ content: "❌ Ocorreu um erro ao processar seus dados!", ephemeral: true });
+                        const playerDinheiro = await Player.findOne({ discordId: interaction.user.id });
+                        if (!playerDinheiro) {
+                            await interaction.reply({ content: 'Jogador não encontrado!', ephemeral: true });
+                            return;
+                        }
+                        await handlePagamentoDinheiro(interaction, interaction, valorDinheiro, playerDinheiro);
+                        break;
+                    case "modal-farm":
+                        const plastico = parseInt(interaction.fields.getTextInputValue("plastico"));
+                        const seda = parseInt(interaction.fields.getTextInputValue("seda"));
+                        const folha = parseInt(interaction.fields.getTextInputValue("folha"));
+                        const cascaSemente = parseInt(interaction.fields.getTextInputValue("casca-de-semente"));
+
+                        if (isNaN(plastico) || isNaN(seda) || isNaN(folha) || isNaN(cascaSemente)) {
+                            await interaction.reply({ content: "❌ Valores inválidos! Por favor, digite números para todas as quantidades.", ephemeral: true });
+                            return;
+                        }
+
+                        const playerFarm = await Player.findOne({ discordId: interaction.user.id });
+
+                        if (!playerFarm) {
+                            await interaction.reply({ content: 'Jogador não encontrado!', ephemeral: true });
+                            return;
+                        }
+
+                        // Atualiza os recursos do jogador
+                        playerFarm.plastico += plastico;
+                        playerFarm.seda += seda;
+                        playerFarm.folha += folha;
+                        playerFarm.cascaSemente += cascaSemente;
+
+                        // **Lógica para verificar e atualizar a meta de farm**
+                        playerFarm.metGoal = 
+                            playerFarm.plastico >= metas.plastico &&
+                            playerFarm.seda >= metas.seda &&
+                            playerFarm.folha >= metas.folha &&
+                            playerFarm.cascaSemente >= metas.cascaSemente;
+
+                        playerFarm.lastChecked = new Date(); // Atualiza a última verificação
+
+                        await playerFarm.save();
+
+                        // Envia a mensagem de confirmação com os recursos totais
+                        const embedConfirmacaoFarm = new EmbedBuilder()
+                            .setTitle("📦 Farm Registrado com Sucesso!")
+                            .setDescription(
+                                `Seu farm foi registrado. Seus totais agora são:\n\n` +
+                                `🧪 Plástico: ${playerFarm.plastico}\n` +
+                                `📄 Seda: ${playerFarm.seda}\n` +
+                                `🌿 Folha: ${playerFarm.folha}\n` +
+                                `🌱 Casca/Semente: ${playerFarm.cascaSemente}\n\n` +
+                                `Status da Meta: ${playerFarm.metGoal ? '✅ Meta atingida' : '❌ Meta não atingida'}`
+                            )
+                            .setColor(playerFarm.metGoal ? 0x00FF00 : 0xFF0000)
+                            .setTimestamp();
+
+                        await interaction.reply({ embeds: [embedConfirmacaoFarm], ephemeral: true });
+
+                        // Se a meta for atingida, envia o embed de parabéns para o canal de logs/notificações
+                        if (playerFarm.metGoal) {
+                            const embedMetaComprovante = new EmbedBuilder()
+                                .setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
+                                .setDescription(`O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`)
+                                .addFields(
+                                    { name: "🧪 Plástico", value: `${playerFarm.plastico}/${metas.plastico}` },
+                                    { name: "📄 Seda", value: `${playerFarm.seda}/${metas.seda}` },
+                                    { name: "🍃 Folha", value: `${playerFarm.folha}/${metas.folha}` },
+                                    { name: "🌱 Casca de Semente", value: `${playerFarm.cascaSemente}/${metas.cascaSemente}` }
+                                )
+                                .setColor("#00FF00")
+                                .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                                .setTimestamp();
+
+                                const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+                                const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
+
+                                if (canalLogs) {
+                                    await canalLogs.send({ embeds: [embedMetaComprovante] });
+                                }
+                                if (canalNotificacao) {
+                                    await canalNotificacao.send({ content: "<@&1292671789222334514>", embeds: [embedMetaComprovante] });
+                                }
+                                
+                                // Atualizar a isenção ao atingir a meta
+                                const agora = new Date();
+                                const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
+                                playerFarm.isencaoAte = isencaoAte;
+                                await playerFarm.save();
+                            }
+                            
+                            break;
+
+                        case "modal-registro":
+                            await interaction.deferReply({ flags: 64 });
+
+                            const nomeRegistro = interaction.fields.getTextInputValue("nome_prsn");
+                            const idRegistro = interaction.fields.getTextInputValue("id_prsn");
+                            const nomeReal = interaction.fields.getTextInputValue("nome");
+                            const nomeIndicacao =
+                                interaction.fields.getTextInputValue("nome_indicacao");
+                            const membro = interaction.guild.members.cache.get(interaction.user.id);
+
+                            if (!membro) {
+                                return interaction.editReply({
+                                    content: "❌ Membro não encontrado no servidor.",
+                                });
+                            }
+
+                            try {
+                                await membro.setNickname(`${nomeRegistro} | ${idRegistro}`);
+                            } catch (error) {
+                                console.error(error);
+                                return interaction.editReply({
+                                    content:
+                                        "❌ Não foi possível alterar o apelido. Verifique minhas permissões.",
+                                });
+                            }
+
+                            const cargo = interaction.guild.roles.cache.find(
+                                (role) => role.name === "┃Membros"
+                            );
+
+                            if (cargo) {
+                                try {
+                                    await membro.roles.add(cargo);
+                                } catch (error) {
+                                    console.error(error);
+                                    return interaction.editReply({
+                                        content: "❌ Não foi possível atribuir o cargo.",
+                                    });
+                                }
+                            }
+
+                            interaction.editReply({
+                                content: `✅ O apelido foi atualizado para: ${nomeRegistro} | ${idRegistro} e recebeu o cargo de ┃Membros`,
+                            });
+
+                            const embed = new EmbedBuilder()
+                                .setColor("#FF0000")
+                                .setTitle("Novo Registro de Usuário")
+                                .addFields([
+                                    { name: "Nome do Personagem", value: nomeRegistro },
+                                    { name: "ID do Personagem", value: idRegistro },
+                                    { name: "Nome Real", value: nomeReal },
+                                    { name: "Nome de Indicação", value: nomeIndicacao },
+                                ])
+                                .setFooter({
+                                    text: `Registrado por ${interaction.user.tag}`,
+                                    iconURL: interaction.user.displayAvatarURL(),
+                                });
+
+                            WebhookClientRegistro.send({
+                                content: `${membro} foi registrado!`,
+                                embeds: [embed],
+                            });
+                            break;
+
+                        default:
+                            await interaction.reply({ content: "❌ Opção inválida!", ephemeral: true });
                 }
-            }
-
-            if (interaction.customId === "modal-dinheiro") {
-                try {
-                    const userId = interaction.user.id;
-                    const valor = parseInt(interaction.fields.getTextInputValue("valor-dinheiro")) || 0;
-
-                    // Buscar ou criar o jogador no banco de dados
-                    let player = await Player.findOne({ discordId: userId });
-                    if (!player) {
-                        player = new Player({
-                            discordId: userId,
-                            username: interaction.user.username
-                        });
-                    }
-
-                    const embedPrivado = new EmbedBuilder()
-                        .setTitle("Envie seu comprovante")
-                        .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem no privado. Você tem até 2 minutos.")
-                        .setColor("#0099FF");
-
-                    await interaction.reply({ content: "✅ Valor registrado! Envie a imagem do comprovante no privado.", ephemeral: true });
-
-                    const dm = await interaction.user.createDM();
-                    await dm.send({ embeds: [embedPrivado] });
-
-                    const filter = m => m.author.id === userId && m.attachments.size > 0;
-                    const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
-
-                    if (collected && collected.size > 0) {
-                        const msg = collected.first();
-                        await handlePagamentoDinheiro(msg, interaction, valor, player);
-                        setTimeout(() => msg.delete().catch(() => { }), 60000);
-                    } else {
-                        await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo." });
-                    }
-                } catch (error) {
-                    console.error('Erro ao processar modal de dinheiro:', error);
-                    await interaction.reply({ content: "❌ Ocorreu um erro ao processar seu pagamento!", ephemeral: true });
-                }
-            }
-            if (customId === "modal-registro") {
-                await interaction.deferReply({ flags: 64 });
-
-                const nomeRegistro = interaction.fields.getTextInputValue("nome_prsn");
-                const idRegistro = interaction.fields.getTextInputValue("id_prsn");
-                const nomeReal = interaction.fields.getTextInputValue("nome");
-                const nomeIndicacao =
-                    interaction.fields.getTextInputValue("nome_indicacao");
-                const membro = interaction.guild.members.cache.get(interaction.user.id);
-
-                if (!membro) {
-                    return interaction.editReply({
-                        content: "❌ Membro não encontrado no servidor.",
-                    });
-                }
-
-                try {
-                    await membro.setNickname(`${nomeRegistro} | ${idRegistro}`);
-                } catch (error) {
-                    console.error(error);
-                    return interaction.editReply({
-                        content:
-                            "❌ Não foi possível alterar o apelido. Verifique minhas permissões.",
-                    });
-                }
-
-                const cargo = interaction.guild.roles.cache.find(
-                    (role) => role.name === "┃Membros"
-                );
-
-                if (cargo) {
-                    try {
-                        await membro.roles.add(cargo);
-                    } catch (error) {
-                        console.error(error);
-                        return interaction.editReply({
-                            content: "❌ Não foi possível atribuir o cargo.",
-                        });
-                    }
-                }
-
-                interaction.editReply({
-                    content: `✅ O apelido foi atualizado para: ${nomeRegistro} | ${idRegistro} e recebeu o cargo de ┃Membros`,
-                });
-
-                const embed = new EmbedBuilder()
-                    .setColor("#FF0000")
-                    .setTitle("Novo Registro de Usuário")
-                    .addFields([
-                        { name: "Nome do Personagem", value: nomeRegistro },
-                        { name: "ID do Personagem", value: idRegistro },
-                        { name: "Nome Real", value: nomeReal },
-                        { name: "Nome de Indicação", value: nomeIndicacao },
-                    ])
-                    .setFooter({
-                        text: `Registrado por ${interaction.user.tag}`,
-                        iconURL: interaction.user.displayAvatarURL(),
-                    });
-
-                WebhookClientRegistro.send({
-                    content: `${membro} foi registrado!`,
-                    embeds: [embed],
-                });
+            } catch (error) {
+                console.error('Erro ao processar modal:', error);
+                await interaction.reply({ content: "❌ Ocorreu um erro ao processar seus dados!", ephemeral: true });
             }
         }
     }
