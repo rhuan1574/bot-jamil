@@ -64,7 +64,7 @@ module.exports = {
             const playersPerPage = 10;
             let replySent = false;
 
-            // Embeds para jogadores que NÃO bateram a meta
+            // Embeds para jogadores que NÃO bateram a meta (apenas nome e tempo sem farm)
             if (playersNotMetGoal.length > 0) {
                 const totalPagesNotMet = Math.ceil(playersNotMetGoal.length / playersPerPage);
                 for (let i = 0; i < totalPagesNotMet; i++) {
@@ -77,18 +77,28 @@ module.exports = {
                         .setDescription(currentPlayers.map(player => {
                             const discordUser = interaction.guild.members.cache.get(player.discordId);
                             const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
+                            let timeWithoutFarm = 'Nunca registrado';
+                            if (player.lastChecked) {
+                                const now = new Date();
+                                const lastCheckedDate = new Date(player.lastChecked);
+                                const diffMs = now.getTime() - lastCheckedDate.getTime();
 
-                            // Calcular quanto falta de cada recurso
-                            const faltaPlastico = Math.max(0, metas.plastico - player.plastico);
-                            const faltaSeda = Math.max(0, metas.seda - player.seda);
-                            const faltaFolha = Math.max(0, metas.folha - player.folha);
-                            const faltaCascaSemente = Math.max(0, metas.cascaSemente - player.cascaSemente);
+                                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                                const diffHours = Math.floor(diffMinutes / 60);
+                                const diffDays = Math.floor(diffHours / 24);
 
-                            return `**${username}**\n` +
-                                   `🧪 Falta Plástico: ${faltaPlastico}\n` +
-                                   `📄 Falta Seda: ${faltaSeda}\n` +
-                                   `🌿 Falta Folha: ${faltaFolha}\n` +
-                                   `🌱 Falta Casca/Semente: ${faltaCascaSemente}\n`;
+                                const remainingHours = diffHours % 24;
+                                const remainingMinutes = diffMinutes % 60;
+
+                                if (diffDays > 0) {
+                                    timeWithoutFarm = `${diffDays}d ${remainingHours}h ${remainingMinutes}m atrás`;
+                                } else if (diffHours > 0) {
+                                    timeWithoutFarm = `${diffHours}h ${remainingMinutes}m atrás`;
+                                } else {
+                                    timeWithoutFarm = `${diffMinutes}m atrás`;
+                                }
+                            }
+                            return `**${username}** - ${timeWithoutFarm}`;
                         }).join('\n'))
                         .setColor(0xFF0000) // Vermelho para quem não atingiu
                         .setTimestamp();
@@ -102,7 +112,7 @@ module.exports = {
                 }
             }
 
-            // Embeds para jogadores que bateram a meta
+            // Embeds para jogadores que bateram a meta (apenas nome)
             if (playersMetGoal.length > 0) {
                 const totalPagesMet = Math.ceil(playersMetGoal.length / playersPerPage);
                 for (let i = 0; i < totalPagesMet; i++) {
