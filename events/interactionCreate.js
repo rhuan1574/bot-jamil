@@ -359,6 +359,34 @@ module.exports = {
                                 await dm.send({ content: "✅ Comprovante recebido e registrado!" });
                                 setTimeout(() => msg.delete().catch(() => { }), 60000); // Apaga a mensagem do comprovante após 1 minuto
 
+                                // Se a meta for atingida, envia uma única embed combinada para logs/notificações AGORA
+                                if (playerFarm.metGoal) { 
+                                    const combinedEmbed = new EmbedBuilder()
+                                        .setTitle("🎉 Parabéns! Todas as metas foram atingidas!") // Título da embed de parabéns
+                                        .setDescription(`O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.\n\n**Comprovante de Farm Anexado:**`) // Descrição combinada
+                                        .addFields(
+                                            { name: "🧪 Plástico", value: `${playerFarm.plastico}/${metas.plastico}` },
+                                            { name: "📄 Seda", value: `${playerFarm.seda}/${metas.seda}` },
+                                            { name: "🍃 Folha", value: `${playerFarm.folha}/${metas.folha}` },
+                                            { name: "🌱 Casca de Semente", value: `${playerFarm.cascaSemente}/${metas.cascaSemente}` }
+                                        )
+                                        .setColor("#00FF00") // Cor verde
+                                        .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                                        .setTimestamp()
+                                        .setImage(`attachment://${attachment.name}`); // Adiciona a imagem do comprovante
+
+                                    const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+                                    const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
+
+                                    // Envia a embed combinada COM a imagem para os canais
+                                    if (canalLogs) {
+                                        await canalLogs.send({ embeds: [combinedEmbed], files: [attachment] });
+                                    }
+                                    if (canalNotificacao) {
+                                        await canalNotificacao.send({ content: "<@&1292671789222334514>", embeds: [combinedEmbed], files: [attachment] });
+                                    }
+                                }
+
                             } else {
                                 await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo de registro de farm." });
                             }
@@ -367,40 +395,12 @@ module.exports = {
                             await interaction.user.send({ content: "❌ Não foi possível solicitar o comprovante por DM. Por favor, certifique-se de que suas Mensagens Diretas estão abertas para este servidor." }).catch(() => {}); // Adiciona catch para evitar crash se DM for bloqueada
                         }
 
-                        // Se a meta for atingida E o comprovante foi recebido, envia uma única embed para logs/notificações
-                        if (playerFarm.metGoal && collected && collected.size > 0) { // Verifica se meta foi atingida E comprovante foi recebido
-                            const attachment = collected.first().attachments.first(); // Pega o anexo da mensagem coletada
-
-                            const combinedEmbed = new EmbedBuilder()
-                                .setTitle("🎉 Parabéns! Todas as metas foram atingidas!") // Título da embed de parabéns
-                                .setDescription(`O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.\n\n**Comprovante de Farm Anexado:**`) // Descrição combinada
-                                .addFields(
-                                    { name: "🧪 Plástico", value: `${playerFarm.plastico}/${metas.plastico}` },
-                                    { name: "📄 Seda", value: `${playerFarm.seda}/${metas.seda}` },
-                                    { name: "🍃 Folha", value: `${playerFarm.folha}/${metas.folha}` },
-                                    { name: "🌱 Casca de Semente", value: `${playerFarm.cascaSemente}/${metas.cascaSemente}` }
-                                )
-                                .setColor("#00FF00") // Cor verde
-                                .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
-                                .setTimestamp()
-                                .setImage(`attachment://${attachment.name}`); // Adiciona a imagem do comprovante
-
-                            const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
-                            const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
-
-                            // Envia a embed combinada COM a imagem para os canais
-                            if (canalLogs) {
-                                await canalLogs.send({ embeds: [combinedEmbed], files: [attachment] });
-                            }
-                            if (canalNotificacao) {
-                                await canalNotificacao.send({ content: "<@&1292671789222334514>", embeds: [combinedEmbed], files: [attachment] });
-                            }
-                            
-                            // Atualizar a isenção ao atingir a meta (mantido aqui)
+                        // Atualizar a isenção ao atingir a meta (mantido aqui, fora do if do comprovante)
+                        if (playerFarm.metGoal) {
                             const agora = new Date();
                             const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
                             playerFarm.isencaoAte = isencaoAte;
-                            await playerFarm.save();
+                            await playerFarm.save(); // Salva com a isenção
                         }
                             
                             break;
