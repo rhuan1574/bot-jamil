@@ -267,7 +267,37 @@ module.exports = {
                             await interaction.reply({ content: 'Jogador não encontrado!', ephemeral: true });
                             return;
                         }
-                        await handlePagamentoDinheiro(interaction, interaction, valorDinheiro, playerDinheiro);
+
+                        // **Adicionar lógica para solicitar comprovante por DM para pagamento em dinheiro**
+                        try {
+                            await interaction.reply({ content: "✅ Valor registrado! Por favor, envie a imagem do comprovante no privado do bot.", ephemeral: true }); // Confirmação inicial
+
+                            const embedPrivado = new EmbedBuilder()
+                                .setTitle("Envie seu comprovante de Pagamento")
+                                .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem no privado. Você tem até 2 minutos.")
+                                .setColor("#0099FF");
+                                
+                            const dm = await interaction.user.createDM();
+                            await dm.send({ embeds: [embedPrivado] });
+
+                            const filter = m => m.author.id === interaction.user.id && m.attachments.size > 0;
+                            const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
+
+                            if (collected && collected.size > 0) {
+                                const msg = collected.first();
+                                // Chama handlePagamentoDinheiro com o objeto da mensagem recebida
+                                await handlePagamentoDinheiro(msg, interaction, valorDinheiro, playerDinheiro); 
+                                setTimeout(() => msg.delete().catch(() => { }), 60000); // Apaga a mensagem do comprovante após 1 minuto
+
+                            } else {
+                                await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo de pagamento." });
+                            }
+
+                        } catch (err) {
+                            console.error('Erro ao solicitar/processar comprovante de pagamento por DM:', err);
+                            await interaction.user.send({ content: "❌ Não foi possível solicitar o comprovante por DM. Por favor, certifique-se de que suas Mensagens Diretas estão abertas para este servidor." }).catch(() => {}); // Adiciona catch
+                        }
+
                         break;
                     case "modal-farm":
                         const plastico = parseInt(interaction.fields.getTextInputValue("plastico"));
