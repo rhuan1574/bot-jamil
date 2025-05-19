@@ -12,7 +12,7 @@ const metas = {
 // **IDs de jogadores a serem excluídos da análise geral**
 // Adicione os IDs dos usuários que você não quer que apareçam na lista geral aqui.
 // Exemplo: const excludedPlayerIds = ['ID_DO_USUARIO_1', 'ID_DO_USUARIO_2'];
-const excludedPlayerIds = ["511895119784443914", "509841862350077960", "1017805814473445377", "1187800536855093248"]; // Adicione os IDs aqui, entre as aspas e separados por vírgula
+const excludedPlayerIds = ["511895119784443914", "509841862350077960"]; // Adicione os IDs aqui, entre as aspas e separados por vírgula
 
 module.exports = {
     data: new SlashCommandBuilder()
