@@ -50,99 +50,71 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
         } else {
-            // Análise de todos os jogadores (agora separada por meta)
-            const players = await Player.find();
+            // Análise de todos os jogadores em uma única embed, com paginação
+            const players = await Player.find().sort({ metGoal: 1, lastChecked: 1 }); // Ordena: não bateram meta primeiro, depois por última verificação
             
             if (players.length === 0) {
                 await interaction.reply({ content: 'Nenhum jogador encontrado!', ephemeral: true });
                 return;
             }
 
-            const playersMetGoal = players.filter(player => player.metGoal);
-            const playersNotMetGoal = players.filter(player => !player.metGoal);
-
             const playersPerPage = 10;
+            const totalPages = Math.ceil(players.length / playersPerPage);
             let replySent = false;
 
-            // Embeds para jogadores que NÃO bateram a meta (apenas nome e tempo sem farm)
-            if (playersNotMetGoal.length > 0) {
-                const totalPagesNotMet = Math.ceil(playersNotMetGoal.length / playersPerPage);
-                for (let i = 0; i < totalPagesNotMet; i++) {
-                    const start = i * playersPerPage;
-                    const end = start + playersPerPage;
-                    const currentPlayers = playersNotMetGoal.slice(start, end);
+            for (let i = 0; i < totalPages; i++) {
+                const start = i * playersPerPage;
+                const end = start + playersPerPage;
+                const currentPlayers = players.slice(start, end);
 
-                    const embed = new EmbedBuilder()
-                        .setTitle(`❌ Metas Não Atingidas - Página ${i + 1}/${totalPagesNotMet}`)
-                        .setDescription(currentPlayers.map(player => {
-                            const discordUser = interaction.guild.members.cache.get(player.discordId);
-                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                            let timeWithoutFarm = 'Nunca registrado';
-                            if (player.lastChecked) {
-                                const now = new Date();
-                                const lastCheckedDate = new Date(player.lastChecked);
-                                const diffMs = now.getTime() - lastCheckedDate.getTime();
+                const embedDescription = currentPlayers.map(player => {
+                    const discordUser = interaction.guild.members.cache.get(player.discordId);
+                    const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
 
-                                const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                                const diffHours = Math.floor(diffMinutes / 60);
-                                const diffDays = Math.floor(diffHours / 24);
+                    if (player.metGoal) {
+                        return `✅ **${username}**`; // Bateu a meta, só mostra o nome com ✅
+                    } else {
+                        // Não bateu a meta, calcula o tempo sem farm
+                        let timeWithoutFarm = 'Nunca registrado';
+                        if (player.lastChecked) {
+                            const now = new Date();
+                            const lastCheckedDate = new Date(player.lastChecked);
+                            const diffMs = now.getTime() - lastCheckedDate.getTime();
 
-                                const remainingHours = diffHours % 24;
-                                const remainingMinutes = diffMinutes % 60;
+                            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                            const diffHours = Math.floor(diffMinutes / 60);
+                            const diffDays = Math.floor(diffHours / 24);
 
-                                if (diffDays > 0) {
-                                    timeWithoutFarm = `${diffDays}d ${remainingHours}h ${remainingMinutes}m atrás`;
-                                } else if (diffHours > 0) {
-                                    timeWithoutFarm = `${diffHours}h ${remainingMinutes}m atrás`;
-                                } else {
-                                    timeWithoutFarm = `${diffMinutes}m atrás`;
-                                }
+                            const remainingHours = diffHours % 24;
+                            const remainingMinutes = diffMinutes % 60;
+
+                            if (diffDays > 0) {
+                                timeWithoutFarm = `${diffDays}d ${remainingHours}h ${remainingMinutes}m atrás`;
+                            } else if (diffHours > 0) {
+                                timeWithoutFarm = `${diffHours}h ${remainingMinutes}m atrás`;
+                            } else if (diffMinutes > 0) { // Mostrar minutos apenas se for > 0
+                                timeWithoutFarm = `${diffMinutes}m atrás`;
+                            } else {
+                                timeWithoutFarm = 'Agora pouco'; // Adiciona um status para farms muito recentes
                             }
-                            return `**${username}** - ${timeWithoutFarm}`;
-                        }).join('\n'))
-                        .setColor(0xFF0000) // Vermelho para quem não atingiu
-                        .setTimestamp();
+                        }
 
-                    if (!replySent) {
-                        await interaction.reply({ embeds: [embed] });
-                        replySent = true;
-                    } else {
-                        await interaction.followUp({ embeds: [embed] });
+                        return `❌ **${username}** - ${timeWithoutFarm}`; // Não bateu, mostra nome com ❌ e tempo sem farm
                     }
+                }).join('\n');
+
+                const embed = new EmbedBuilder()
+                    .setTitle(`📊 Análise de Farm - Todos os Jogadores - Página ${i + 1}/${totalPages}`)
+                    .setDescription(embedDescription)
+                    .setColor(0x0099FF) // Cor neutra para a lista geral
+                    .setTimestamp();
+
+                if (!replySent) {
+                    await interaction.reply({ embeds: [embed] });
+                    replySent = true;
+                } else {
+                    await interaction.followUp({ embeds: [embed] });
                 }
-            }
-
-            // Embeds para jogadores que bateram a meta (apenas nome)
-            if (playersMetGoal.length > 0) {
-                const totalPagesMet = Math.ceil(playersMetGoal.length / playersPerPage);
-                for (let i = 0; i < totalPagesMet; i++) {
-                    const start = i * playersPerPage;
-                    const end = start + playersPerPage;
-                    const currentPlayers = playersMetGoal.slice(start, end);
-
-                    const embed = new EmbedBuilder()
-                        .setTitle(`✅ Metas Atingidas - Página ${i + 1}/${totalPagesMet}`)
-                        .setDescription(currentPlayers.map(player => {
-                            const discordUser = interaction.guild.members.cache.get(player.discordId);
-                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                            // Exibe apenas o nome para quem atingiu a meta
-                            return `**${username}**`;
-                        }).join('\n'))
-                        .setColor(0x00FF00) // Verde para quem atingiu
-                        .setTimestamp();
-
-                    if (!replySent) {
-                        await interaction.reply({ embeds: [embed] });
-                        replySent = true;
-                    } else {
-                        await interaction.followUp({ embeds: [embed] });
-                    }
-                }
-            }
-
-            // Mensagem caso nenhuma lista tenha jogadores (improvável, mas para segurança)
-            if (playersMetGoal.length === 0 && playersNotMetGoal.length === 0 && !replySent) {
-                await interaction.reply({ content: 'Nenhum jogador encontrado!', ephemeral: true });
             }
         }
     },
