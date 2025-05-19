@@ -9,6 +9,11 @@ const metas = {
     plastico: 40
 };
 
+// **IDs de jogadores a serem excluídos da análise geral**
+// Adicione os IDs dos usuários que você não quer que apareçam na lista geral aqui.
+// Exemplo: const excludedPlayerIds = ['ID_DO_USUARIO_1', 'ID_DO_USUARIO_2'];
+const excludedPlayerIds = ["511895119784443914", "509841862350077960", "1017805814473445377", "1187800536855093248"]; // Adicione os IDs aqui, entre as aspas e separados por vírgula
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('analisar-farm')
@@ -51,21 +56,24 @@ module.exports = {
             await interaction.reply({ embeds: [embed] });
         } else {
             // Análise de todos os jogadores em uma única embed, com paginação
-            const players = await Player.find().sort({ metGoal: 1, lastChecked: 1 }); // Ordena: não bateram meta primeiro, depois por última verificação
+            const players = await Player.find().sort({ metGoal: 1, lastChecked: 1 });
             
-            if (players.length === 0) {
-                await interaction.reply({ content: 'Nenhum jogador encontrado!', ephemeral: true });
+            // **Filtrar jogadores excluídos**
+            const filteredPlayers = players.filter(player => !excludedPlayerIds.includes(player.discordId));
+
+            if (filteredPlayers.length === 0) {
+                await interaction.reply({ content: 'Nenhum jogador encontrado para análise!', ephemeral: true });
                 return;
             }
 
             const playersPerPage = 10;
-            const totalPages = Math.ceil(players.length / playersPerPage);
+            const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
             let replySent = false;
 
             for (let i = 0; i < totalPages; i++) {
                 const start = i * playersPerPage;
                 const end = start + playersPerPage;
-                const currentPlayers = players.slice(start, end);
+                const currentPlayers = filteredPlayers.slice(start, end);
 
                 const embedDescription = currentPlayers.map(player => {
                     const discordUser = interaction.guild.members.cache.get(player.discordId);
