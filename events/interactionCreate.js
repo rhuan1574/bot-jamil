@@ -332,6 +332,8 @@ module.exports = {
 
                         playerFarm.lastChecked = new Date(); // Atualiza a última verificação
 
+                        console.log(`[DEBUG] ${playerFarm.username} - lastChecked definido para: ${playerFarm.lastChecked}`); // Log para depuração
+
                         await playerFarm.save();
 
                         // Envia a mensagem de confirmação com os recursos totais (ephemeral)
