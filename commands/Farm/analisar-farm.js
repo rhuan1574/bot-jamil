@@ -53,7 +53,7 @@ module.exports = {
                 .setColor(player.metGoal ? 0x00FF00 : 0xFF0000)
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.reply({ embeds: [embed] ,ephemeral: true});
         } else {
             // Análise de todos os jogadores em uma única embed, com paginação
             const players = await Player.find().sort({ metGoal: 1, lastChecked: 1 });
@@ -118,10 +118,10 @@ module.exports = {
                     .setTimestamp();
 
                 if (!replySent) {
-                    await interaction.reply({ embeds: [embed] });
+                    await interaction.reply({ embeds: [embed] ,ephemeral: true});
                     replySent = true;
                 } else {
-                    await interaction.followUp({ embeds: [embed] });
+                    await interaction.followUp({ embeds: [embed] ,ephemeral: true});
                 }
             }
         }
