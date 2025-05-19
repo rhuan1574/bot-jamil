@@ -431,9 +431,24 @@ module.exports = {
                         // Atualizar a isenção ao atingir a meta (mantido aqui, fora do if do comprovante)
                         if (playerFarm.metGoal) {
                             const agora = new Date();
-                            const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
+                            // **Calcula os dias de isenção com base na quantidade de farm**
+                            const diasIsencao = Math.min(
+                                Math.floor(playerFarm.plastico / metas.plastico),
+                                Math.floor(playerFarm.seda / metas.seda),
+                                Math.floor(playerFarm.folha / metas.folha),
+                                Math.floor(playerFarm.cascaSemente / metas.cascaSemente)
+                            );
+                            
+                            // Garante que o mínimo seja 1 dia se a meta foi batida
+                            const diasParaAdicionar = Math.max(1, diasIsencao);
+
+                            const isencaoAte = new Date(agora.getTime() + diasParaAdicionar * 24 * 60 * 60 * 1000); // Adiciona os dias calculados
                             playerFarm.isencaoAte = isencaoAte;
                             await playerFarm.save(); // Salva com a isenção
+
+                            // Opcional: Log para verificar os dias de isenção concedidos
+                            console.log(`[DEBUG] ${playerFarm.username} - Concedidos ${diasParaAdicionar} dias de isenção.`);
+
                         }
                             
                             break;
