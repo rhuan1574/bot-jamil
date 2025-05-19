@@ -50,39 +50,85 @@ module.exports = {
                 return;
             }
 
-            // Dividir os jogadores em grupos de 10 para evitar mensagens muito longas
+            const playersMetGoal = players.filter(player => player.metGoal);
+            const playersNotMetGoal = players.filter(player => !player.metGoal);
+
             const playersPerPage = 10;
-            const totalPages = Math.ceil(players.length / playersPerPage);
+            let replySent = false;
 
-            for (let i = 0; i < totalPages; i++) {
-                const start = i * playersPerPage;
-                const end = start + playersPerPage;
-                const currentPlayers = players.slice(start, end);
+            // Embeds para jogadores que bateram a meta
+            if (playersMetGoal.length > 0) {
+                const totalPagesMet = Math.ceil(playersMetGoal.length / playersPerPage);
+                for (let i = 0; i < totalPagesMet; i++) {
+                    const start = i * playersPerPage;
+                    const end = start + playersPerPage;
+                    const currentPlayers = playersMetGoal.slice(start, end);
 
-                const embed = new EmbedBuilder()
-                    .setTitle(`📊 Análise de Farm - Página ${i + 1}/${totalPages}`)
-                    .setDescription(currentPlayers.map(player => {
-                        const discordUser = interaction.guild.members.cache.get(player.discordId);
-                        const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                        return `**${username}**\n` +
-                               `Status: ${player.metGoal ? '✅ Meta atingida' : '❌ Meta não atingida'}\n` +
-                               `💰 Dinheiro: ${player.dinheiro}\n` +
-                               `🧪 Plástico: ${player.plastico}\n` +
-                               `📄 Seda: ${player.seda}\n` +
-                               `🌿 Folha: ${player.folha}\n` +
-                               `🌱 Casca/Semente: ${player.cascaSemente}\n` +
-                               `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                               `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                               `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
-                    }).join('\n'))
-                    .setColor(0x0099FF)
-                    .setTimestamp();
+                    const embed = new EmbedBuilder()
+                        .setTitle(`📊 Metas Atingidas - Página ${i + 1}/${totalPagesMet}`)
+                        .setDescription(currentPlayers.map(player => {
+                            const discordUser = interaction.guild.members.cache.get(player.discordId);
+                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
+                            return `**${username}**\n` +
+                                   `💰 Dinheiro: ${player.dinheiro}\n` +
+                                   `🧪 Plástico: ${player.plastico}\n` +
+                                   `📄 Seda: ${player.seda}\n` +
+                                   `🌿 Folha: ${player.folha}\n` +
+                                   `🌱 Casca/Semente: ${player.cascaSemente}\n` +
+                                   `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                                   `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                                   `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
+                        }).join('\n'))
+                        .setColor(0x00FF00)
+                        .setTimestamp();
 
-                if (i === 0) {
-                    await interaction.reply({ embeds: [embed] });
-                } else {
-                    await interaction.followUp({ embeds: [embed] });
+                    if (!replySent) {
+                        await interaction.reply({ embeds: [embed] });
+                        replySent = true;
+                    } else {
+                        await interaction.followUp({ embeds: [embed] });
+                    }
                 }
+            }
+
+            // Embeds para jogadores que não bateram a meta
+            if (playersNotMetGoal.length > 0) {
+                const totalPagesNotMet = Math.ceil(playersNotMetGoal.length / playersPerPage);
+                for (let i = 0; i < totalPagesNotMet; i++) {
+                    const start = i * playersPerPage;
+                    const end = start + playersPerPage;
+                    const currentPlayers = playersNotMetGoal.slice(start, end);
+
+                    const embed = new EmbedBuilder()
+                        .setTitle(`📊 Metas Não Atingidas - Página ${i + 1}/${totalPagesNotMet}`)
+                        .setDescription(currentPlayers.map(player => {
+                            const discordUser = interaction.guild.members.cache.get(player.discordId);
+                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
+                            return `**${username}**\n` +
+                                   `💰 Dinheiro: ${player.dinheiro}\n` +
+                                   `🧪 Plástico: ${player.plastico}\n` +
+                                   `📄 Seda: ${player.seda}\n` +
+                                   `🌿 Folha: ${player.folha}\n` +
+                                   `🌱 Casca/Semente: ${player.cascaSemente}\n` +
+                                   `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                                   `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                                   `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
+                        }).join('\n'))
+                        .setColor(0xFF0000)
+                        .setTimestamp();
+
+                    if (!replySent) {
+                        await interaction.reply({ embeds: [embed] });
+                        replySent = true;
+                    } else {
+                        await interaction.followUp({ embeds: [embed] });
+                    }
+                }
+            }
+
+            // Se nenhuma lista tiver jogadores (caso improvável com a verificação inicial, mas por segurança)
+            if (playersMetGoal.length === 0 && playersNotMetGoal.length === 0) {
+                await interaction.reply({ content: 'Nenhum jogador encontrado!', ephemeral: true });
             }
         }
     },
