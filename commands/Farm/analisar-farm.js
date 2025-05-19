@@ -1,6 +1,14 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Player = require('../../database/models/Player.js');
 
+// Definir as metas aqui também para uso neste comando
+const metas = {
+    cascaSemente: 120,
+    folha: 120,
+    seda: 120,
+    plastico: 40
+};
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('analisar-farm')
@@ -42,7 +50,7 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
         } else {
-            // Análise de todos os jogadores
+            // Análise de todos os jogadores (agora separada por meta)
             const players = await Player.find();
             
             if (players.length === 0) {
@@ -56,6 +64,44 @@ module.exports = {
             const playersPerPage = 10;
             let replySent = false;
 
+            // Embeds para jogadores que NÃO bateram a meta
+            if (playersNotMetGoal.length > 0) {
+                const totalPagesNotMet = Math.ceil(playersNotMetGoal.length / playersPerPage);
+                for (let i = 0; i < totalPagesNotMet; i++) {
+                    const start = i * playersPerPage;
+                    const end = start + playersPerPage;
+                    const currentPlayers = playersNotMetGoal.slice(start, end);
+
+                    const embed = new EmbedBuilder()
+                        .setTitle(`❌ Metas Não Atingidas - Página ${i + 1}/${totalPagesNotMet}`)
+                        .setDescription(currentPlayers.map(player => {
+                            const discordUser = interaction.guild.members.cache.get(player.discordId);
+                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
+
+                            // Calcular quanto falta de cada recurso
+                            const faltaPlastico = Math.max(0, metas.plastico - player.plastico);
+                            const faltaSeda = Math.max(0, metas.seda - player.seda);
+                            const faltaFolha = Math.max(0, metas.folha - player.folha);
+                            const faltaCascaSemente = Math.max(0, metas.cascaSemente - player.cascaSemente);
+
+                            return `**${username}**\n` +
+                                   `🧪 Falta Plástico: ${faltaPlastico}\n` +
+                                   `📄 Falta Seda: ${faltaSeda}\n` +
+                                   `🌿 Falta Folha: ${faltaFolha}\n` +
+                                   `🌱 Falta Casca/Semente: ${faltaCascaSemente}\n`;
+                        }).join('\n'))
+                        .setColor(0xFF0000) // Vermelho para quem não atingiu
+                        .setTimestamp();
+
+                    if (!replySent) {
+                        await interaction.reply({ embeds: [embed] });
+                        replySent = true;
+                    } else {
+                        await interaction.followUp({ embeds: [embed] });
+                    }
+                }
+            }
+
             // Embeds para jogadores que bateram a meta
             if (playersMetGoal.length > 0) {
                 const totalPagesMet = Math.ceil(playersMetGoal.length / playersPerPage);
@@ -65,21 +111,14 @@ module.exports = {
                     const currentPlayers = playersMetGoal.slice(start, end);
 
                     const embed = new EmbedBuilder()
-                        .setTitle(`📊 Metas Atingidas - Página ${i + 1}/${totalPagesMet}`)
+                        .setTitle(`✅ Metas Atingidas - Página ${i + 1}/${totalPagesMet}`)
                         .setDescription(currentPlayers.map(player => {
                             const discordUser = interaction.guild.members.cache.get(player.discordId);
                             const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                            return `**${username}**\n` +
-                                   `💰 Dinheiro: ${player.dinheiro}\n` +
-                                   `🧪 Plástico: ${player.plastico}\n` +
-                                   `📄 Seda: ${player.seda}\n` +
-                                   `🌿 Folha: ${player.folha}\n` +
-                                   `🌱 Casca/Semente: ${player.cascaSemente}\n` +
-                                   `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                                   `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                                   `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
+                            // Exibe apenas o nome para quem atingiu a meta
+                            return `**${username}**`;
                         }).join('\n'))
-                        .setColor(0x00FF00)
+                        .setColor(0x00FF00) // Verde para quem atingiu
                         .setTimestamp();
 
                     if (!replySent) {
@@ -91,43 +130,8 @@ module.exports = {
                 }
             }
 
-            // Embeds para jogadores que não bateram a meta
-            if (playersNotMetGoal.length > 0) {
-                const totalPagesNotMet = Math.ceil(playersNotMetGoal.length / playersPerPage);
-                for (let i = 0; i < totalPagesNotMet; i++) {
-                    const start = i * playersPerPage;
-                    const end = start + playersPerPage;
-                    const currentPlayers = playersNotMetGoal.slice(start, end);
-
-                    const embed = new EmbedBuilder()
-                        .setTitle(`📊 Metas Não Atingidas - Página ${i + 1}/${totalPagesNotMet}`)
-                        .setDescription(currentPlayers.map(player => {
-                            const discordUser = interaction.guild.members.cache.get(player.discordId);
-                            const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                            return `**${username}**\n` +
-                                   `💰 Dinheiro: ${player.dinheiro}\n` +
-                                   `🧪 Plástico: ${player.plastico}\n` +
-                                   `📄 Seda: ${player.seda}\n` +
-                                   `🌿 Folha: ${player.folha}\n` +
-                                   `🌱 Casca/Semente: ${player.cascaSemente}\n` +
-                                   `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                                   `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
-                                   `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
-                        }).join('\n'))
-                        .setColor(0xFF0000)
-                        .setTimestamp();
-
-                    if (!replySent) {
-                        await interaction.reply({ embeds: [embed] });
-                        replySent = true;
-                    } else {
-                        await interaction.followUp({ embeds: [embed] });
-                    }
-                }
-            }
-
-            // Se nenhuma lista tiver jogadores (caso improvável com a verificação inicial, mas por segurança)
-            if (playersMetGoal.length === 0 && playersNotMetGoal.length === 0) {
+            // Mensagem caso nenhuma lista tenha jogadores (improvável, mas para segurança)
+            if (playersMetGoal.length === 0 && playersNotMetGoal.length === 0 && !replySent) {
                 await interaction.reply({ content: 'Nenhum jogador encontrado!', ephemeral: true });
             }
         }
