@@ -23,7 +23,20 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setTitle(`📊 Análise de Farm - ${target.username}`)
-                .setDescription(`**Meta Diária:** ${player.dailyGoal || 'Não definida'}\n**Farm Atual:** ${player.currentFarm || 0}\n**Status:** ${player.metGoal ? '✅ Meta atingida' : '❌ Meta não atingida'}`)
+                .setDescription(
+                    `**Status Geral:**\n` +
+                    `✅ Meta atingida: ${player.metGoal ? 'Sim' : 'Não'}\n` +
+                    `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n\n` +
+                    `**Recursos Atuais:**\n` +
+                    `💰 Dinheiro: ${player.dinheiro}\n` +
+                    `🧪 Plástico: ${player.plastico}\n` +
+                    `📄 Seda: ${player.seda}\n` +
+                    `🌿 Folha: ${player.folha}\n` +
+                    `🌱 Casca/Semente: ${player.cascaSemente}\n\n` +
+                    `**Informações Adicionais:**\n` +
+                    `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                    `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}`
+                )
                 .setColor(player.metGoal ? 0x00FF00 : 0xFF0000)
                 .setTimestamp();
 
@@ -42,7 +55,16 @@ module.exports = {
                 .setDescription(players.map(player => {
                     const discordUser = interaction.guild.members.cache.get(player.discordId);
                     const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
-                    return `**${username}**\nMeta: ${player.dailyGoal || 'Não definida'}\nFarm Atual: ${player.currentFarm || 0}\nStatus: ${player.metGoal ? '✅' : '❌'}\n`;
+                    return `**${username}**\n` +
+                           `Status: ${player.metGoal ? '✅ Meta atingida' : '❌ Meta não atingida'}\n` +
+                           `💰 Dinheiro: ${player.dinheiro}\n` +
+                           `🧪 Plástico: ${player.plastico}\n` +
+                           `📄 Seda: ${player.seda}\n` +
+                           `🌿 Folha: ${player.folha}\n` +
+                           `🌱 Casca/Semente: ${player.cascaSemente}\n` +
+                           `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                           `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                           `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}\n`;
                 }).join('\n'))
                 .setColor(0x0099FF)
                 .setTimestamp();
