@@ -304,7 +304,7 @@ module.exports = {
 
                         await playerFarm.save();
 
-                        // Envia a mensagem de confirmação com os recursos totais
+                        // Envia a mensagem de confirmação com os recursos totais (ephemeral)
                         const embedConfirmacaoFarm = new EmbedBuilder()
                             .setTitle("📦 Farm Registrado com Sucesso!")
                             .setDescription(
@@ -320,7 +320,54 @@ module.exports = {
 
                         await interaction.reply({ embeds: [embedConfirmacaoFarm], ephemeral: true });
 
-                        // Se a meta for atingida, envia o embed de parabéns para o canal de logs/notificações
+                        // **Adicionar lógica para solicitar comprovante por DM**
+                        try {
+                            const embedPrivado = new EmbedBuilder()
+                                .setTitle("Envie seu comprovante")
+                                .setDescription("Por favor, envie a imagem do comprovante respondendo esta mensagem. Você tem até 2 minutos.")
+                                .setColor("#0099FF");
+                            
+                            const dm = await interaction.user.createDM();
+                            const message = await dm.send({ embeds: [embedPrivado] }); // Envia a mensagem e guarda a referência
+
+                            const filter = m => m.author.id === interaction.user.id && m.attachments.size > 0;
+                            const collected = await dm.awaitMessages({ filter, max: 1, time: 2 * 60 * 1000, errors: ['time'] }).catch(() => null);
+
+                            if (collected && collected.size > 0) {
+                                const msg = collected.first();
+                                const attachment = msg.attachments.first();
+                                
+                                // Envia o comprovante para os canais de log/notificação, independentemente da meta ter sido atingida ou não
+                                const embedComprovanteLog = new EmbedBuilder()
+                                    .setTitle("📸 Comprovante Recebido")
+                                    .setDescription(`Comprovante de farm de ${interaction.user.username}`)
+                                    .setImage(`attachment://${attachment.name}`)
+                                    .setColor("#0099FF")
+                                    .setFooter({ text: `Enviado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                                    .setTimestamp();
+
+                                const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+                                const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
+
+                                if (canalLogs) {
+                                    await canalLogs.send({ embeds: [embedComprovanteLog], files: [attachment] });
+                                }
+                                if (canalNotificacao) {
+                                     await canalNotificacao.send({ embeds: [embedComprovanteLog], files: [attachment] });
+                                }
+
+                                await dm.send({ content: "✅ Comprovante recebido e registrado!" });
+                                setTimeout(() => msg.delete().catch(() => { }), 60000); // Apaga a mensagem do comprovante após 1 minuto
+
+                            } else {
+                                await dm.send({ content: "⏰ Tempo esgotado! Você não enviou o comprovante a tempo. Por favor, repita o processo de registro de farm." });
+                            }
+                        } catch (err) {
+                            console.error('Erro ao solicitar/processar comprovante por DM:', err);
+                            await interaction.user.send({ content: "❌ Não foi possível solicitar o comprovante por DM. Por favor, certifique-se de que suas Mensagens Diretas estão abertas para este servidor." }).catch(() => {}); // Adiciona catch para evitar crash se DM for bloqueada
+                        }
+
+                        // Se a meta for atingida, envia o embed de parabéns para os canais de logs/notificações
                         if (playerFarm.metGoal) {
                             const embedMetaComprovante = new EmbedBuilder()
                                 .setTitle("🎉 Parabéns! Todas as metas foram atingidas!")
