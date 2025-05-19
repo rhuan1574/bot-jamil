@@ -380,24 +380,26 @@ module.exports = {
                                 )
                                 .setColor("#00FF00")
                                 .setFooter({ text: `Gerado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
-                                .setTimestamp();
+                                .setTimestamp()
+                                .setImage(`attachment://${attachment.name}`);
 
-                                const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
-                                const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
+                            const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
+                            const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
 
-                                if (canalLogs) {
-                                    await canalLogs.send({ embeds: [embedMetaComprovante] });
-                                }
-                                if (canalNotificacao) {
-                                    await canalNotificacao.send({ content: "<@&1292671789222334514>", embeds: [embedMetaComprovante] });
-                                }
-                                
-                                // Atualizar a isenção ao atingir a meta
-                                const agora = new Date();
-                                const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
-                                playerFarm.isencaoAte = isencaoAte;
-                                await playerFarm.save();
+                            // Envia a embed de parabéns COM a imagem
+                            if (canalLogs) {
+                                await canalLogs.send({ embeds: [embedMetaComprovante], files: [attachment] });
                             }
+                            if (canalNotificacao) {
+                                await canalNotificacao.send({ content: "<@&1292671789222334514>", embeds: [embedMetaComprovante], files: [attachment] });
+                            }
+                                
+                            // Atualizar a isenção ao atingir a meta
+                            const agora = new Date();
+                            const isencaoAte = new Date(agora.getTime() + 24 * 60 * 60 * 1000); // 1 dia de isenção
+                            playerFarm.isencaoAte = isencaoAte;
+                            await playerFarm.save();
+                        }
                             
                             break;
 
