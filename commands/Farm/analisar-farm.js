@@ -80,7 +80,7 @@ module.exports = {
                     const username = discordUser ? discordUser.user.username : 'Jogador Desconhecido';
 
                     if (player.metGoal) {
-                        return `✅ **${username}**`; // Bateu a meta, só mostra o nome com ✅
+                        return `✅ <@${player.discordId}>`; // Bateu a meta, só mostra a menção com ✅
                     } else {
                         // Não bateu a meta, calcula o tempo sem farm
                         let timeWithoutFarm = 'Nunca registrado';
@@ -107,7 +107,7 @@ module.exports = {
                             }
                         }
 
-                        return `❌ **${username}** - ${timeWithoutFarm}`; // Não bateu, mostra nome com ❌ e tempo sem farm
+                        return `❌ <@${player.discordId}> - ${timeWithoutFarm}`; // Não bateu, mostra a menção com ❌ e tempo sem farm
                     }
                 }).join('\n');
 
