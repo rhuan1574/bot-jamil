@@ -88,6 +88,7 @@ const handlePagamentoDinheiro = async (msg, interaction, valor, player) => {
     player.dinheiro += valor;
     player.isencaoAte = isencaoAte;
     player.lastChecked = new Date();
+    player.metGoal = true;
     await player.save();
 
     // Embed de confirmação
