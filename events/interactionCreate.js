@@ -371,25 +371,7 @@ module.exports = {
                                 const msg = collected.first();
                                 const attachment = msg.attachments.first();
                                 
-                                // Envia o comprovante para os canais de log/notificação, independentemente da meta ter sido atingida ou não
-                                const embedComprovanteLog = new EmbedBuilder()
-                                    .setTitle("📸 Comprovante Recebido")
-                                    .setDescription(`Comprovante de farm de ${interaction.user.username}`)
-                                    .setImage(`attachment://${attachment.name}`)
-                                    .setColor("#0099FF")
-                                    .setFooter({ text: `Enviado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
-                                    .setTimestamp();
-
-                                const canalLogs = interaction.guild.channels.cache.find(channel => channel.name === "🔐・logs-farm");
-                                const canalNotificacao = interaction.guild.channels.cache.find(channel => channel.name === "📌・notificacoes-gerentes");
-
-                                if (canalLogs) {
-                                    await canalLogs.send({ embeds: [embedComprovanteLog], files: [attachment] });
-                                }
-                                if (canalNotificacao) {
-                                     await canalNotificacao.send({ embeds: [embedComprovanteLog], files: [attachment] });
-                                }
-
+                                
                                 await dm.send({ content: "✅ Comprovante recebido e registrado!" });
                                 setTimeout(() => msg.delete().catch(() => { }), 60000); // Apaga a mensagem do comprovante após 1 minuto
 
