@@ -4,9 +4,9 @@ const WebhookClientRegistro = new WebhookClient({ id: process.env.ID_WEBHOOK, to
 
 // Sistema de metas e controle diário
 const metas = {
-    cascaSemente: 120,
-    folha: 120,
-    seda: 120,
+    cascaSemente: 80,
+    folha: 100,
+    seda: 40,
     plastico: 40
 };
 
