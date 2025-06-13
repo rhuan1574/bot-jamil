@@ -2,6 +2,7 @@ const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, Moda
 const Player = require('../database/models/Player');
 const WebhookClientRegistro = new WebhookClient({ id: process.env.ID_WEBHOOK, token: process.env.TOKEN_WEBHOOK});
 const { conectarMongo } = require("../database/connect.js");
+const { members} = require("./ready.js")
 
 // Sistema de metas e controle diário
 const metas = {
@@ -503,6 +504,7 @@ module.exports = {
 
                             setTimeout(() => {
                                 conectarMongo();
+                                console.log(`Foi Atualizado o banco de dados novamente!`)
                             }, 10000)
                             break;
 
