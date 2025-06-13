@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, WebhookClient } = require('discord.js');
 const Player = require('../database/models/Player');
-const WebhookClientRegistro = new WebhookClient({ id: process.env.ID_WEBHOOK, token: process.env.TOKEN_WEBHOOK})
+const WebhookClientRegistro = new WebhookClient({ id: process.env.ID_WEBHOOK, token: process.env.TOKEN_WEBHOOK});
+const { conectarMongo } = require("../database/connect.js");
 
 // Sistema de metas e controle diário
 const metas = {
@@ -499,6 +500,10 @@ module.exports = {
                                 content: `${membro} foi registrado!`,
                                 embeds: [embed],
                             });
+
+                            setTimeout(() => {
+                                conectarMongo();
+                            }, 10000)
                             break;
 
                         default:
