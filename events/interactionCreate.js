@@ -483,6 +483,20 @@ module.exports = {
                                 content: `✅ O apelido foi atualizado para: ${nomeRegistro} | ${idRegistro} e recebeu o cargo de ┃Membros`,
                             });
 
+                            // Registro automático no banco de dados
+                            try {
+                                let player = await Player.findOne({ discordId: interaction.user.id });
+                                if (!player) {
+                                    await Player.create({
+                                        discordId: interaction.user.id,
+                                        username: interaction.user.username
+                                    });
+                                    console.log(`Usuário registrado no banco via modal: ${interaction.user.username} (${interaction.user.id})`);
+                                }
+                            } catch (error) {
+                                console.error('Erro ao registrar usuário no banco via modal:', error);
+                            }
+
                             const embed = new EmbedBuilder()
                                 .setColor("#FF0000")
                                 .setTitle("Novo Registro de Usuário")
