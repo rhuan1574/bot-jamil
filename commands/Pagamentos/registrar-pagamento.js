@@ -1,10 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { createWorker } = require('tesseract.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('registrar-pagamento')
         .setDescription('Registra um novo pagamento com reconhecimento automático')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addAttachmentOption(option =>
             option.setName('comprovante')
                 .setDescription('Comprovante do pagamento')

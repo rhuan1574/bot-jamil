@@ -1,10 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     category: 'Geral',
     data: new SlashCommandBuilder()
     .setName('registro')
-    .setDescription('Comando utilizado para disparar uma embed de registro.'),
+    .setDescription('Comando utilizado para disparar uma embed de registro.')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const embed = new EmbedBuilder()
         .setTitle('Registro Automático')

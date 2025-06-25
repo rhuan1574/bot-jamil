@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const Player = require('../../database/models/Player.js');
 
 // Definir as metas aqui também para uso neste comando
@@ -30,6 +30,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('analisar-farm')
         .setDescription('Analisa quanto cada jogador deve farmar')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addUserOption(option =>
             option.setName('jogador')
                 .setDescription('Selecione o jogador (opcional)')
