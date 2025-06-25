@@ -50,7 +50,8 @@ module.exports = {
                             seda: 0,
                             folha: 0,
                             cascaSemente: 0,
-                            lastReset: new Date()
+                            lastReset: new Date(),
+                            metGoal: false
                         }
                     );
                     console.log(`Valores de farm resetados para ${updatedCount.modifiedCount} jogadores.`);
