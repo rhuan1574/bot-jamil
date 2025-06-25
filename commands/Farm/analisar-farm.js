@@ -14,6 +14,18 @@ const metas = {
 // Exemplo: const excludedPlayerIds = ['ID_DO_USUARIO_1', 'ID_DO_USUARIO_2'];
 const excludedPlayerIds = ["511895119784443914", "509841862350077960"]; // Adicione os IDs aqui, entre as aspas e separados por vírgula
 
+function formatarTempo(minutos) {
+    if (!minutos || minutos <= 0) return 'Agora pouco';
+    const dias = Math.floor(minutos / 1440);
+    const horas = Math.floor((minutos % 1440) / 60);
+    const mins = minutos % 60;
+    let str = '';
+    if (dias > 0) str += `${dias}d `;
+    if (horas > 0) str += `${horas}h `;
+    if (mins > 0) str += `${mins}m`;
+    return str.trim() + ' atrás';
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('analisar-farm')
@@ -39,8 +51,9 @@ module.exports = {
                 .setDescription(
                     `**Status Geral:**\n` +
                     `✅ Meta atingida: ${player.metGoal ? 'Sim' : 'Não'}\n` +
-                    `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n\n` +
-                    `**Recursos Atuais:**\n` +
+                    `🕒 Última verificação: ${player.lastChecked ? new Date(player.lastChecked).toLocaleString('pt-BR') : 'Nunca'}\n` +
+                    (!player.metGoal && player.tempoSemMeta ? `⏳ Tempo sem bater a meta: ${formatarTempo(player.tempoSemMeta)}\n` : '') +
+                    `\n**Recursos Atuais:**\n` +
                     `💰 Dinheiro: ${player.dinheiro}\n` +
                     `🧪 Plástico: ${player.plastico}\n` +
                     `📄 Seda: ${player.seda}\n` +
@@ -82,32 +95,9 @@ module.exports = {
                     if (player.metGoal) {
                         return `✅ <@${player.discordId}>`; // Bateu a meta, só mostra a menção com ✅
                     } else {
-                        // Não bateu a meta, calcula o tempo sem farm
-                        let timeWithoutFarm = 'Nunca registrado';
-                        if (player.lastChecked) {
-                            const now = new Date();
-                            const lastCheckedDate = new Date(player.lastChecked);
-                            const diffMs = now.getTime() - lastCheckedDate.getTime();
-
-                            const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                            const diffHours = Math.floor(diffMinutes / 60);
-                            const diffDays = Math.floor(diffHours / 24);
-
-                            const remainingHours = diffHours % 24;
-                            const remainingMinutes = diffMinutes % 60;
-
-                            if (diffDays > 0) {
-                                timeWithoutFarm = `${diffDays}d ${remainingHours}h ${remainingMinutes}m atrás`;
-                            } else if (diffHours > 0) {
-                                timeWithoutFarm = `${diffHours}h ${remainingMinutes}m atrás`;
-                            } else if (diffMinutes > 0) { // Mostrar minutos apenas se for > 0
-                                timeWithoutFarm = `${diffMinutes}m atrás`;
-                            } else {
-                                timeWithoutFarm = 'Agora pouco'; // Adiciona um status para farms muito recentes
-                            }
-                        }
-
-                        return `❌ <@${player.discordId}> - ${timeWithoutFarm}`; // Não bateu, mostra a menção com ❌ e tempo sem farm
+                        // Não bateu a meta, mostra o tempo sem meta
+                        let tempo = player.tempoSemMeta ? formatarTempo(player.tempoSemMeta) : 'Nunca registrado';
+                        return `❌ <@${player.discordId}> - ${tempo}`;
                     }
                 }).join('\n');
 

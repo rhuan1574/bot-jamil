@@ -22,6 +22,7 @@ const playerSchema = new mongoose.Schema({
     dinheiro: { type: Number, default: 0 },
     isencaoAte: { type: Date },
     lastReset: { type: Date },
+    tempoSemMeta: { type: Number, default: 0 }, // Tempo em minutos sem bater a meta
 });
 
 module.exports = mongoose.model('Player', playerSchema);

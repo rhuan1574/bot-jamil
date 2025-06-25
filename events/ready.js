@@ -40,23 +40,38 @@ module.exports = {
                 console.error('Guild não encontrada. Verifique o GUILD_ID no .env.');
             }
 
-            // Reset diário ajustado para 11:30 AM (UTC-3 = 14:30 UTC)
-            schedule.scheduleJob('00 00 * * *', async function() {
+            // Reset diário às 00:00 (UTC-3 = 03:00 UTC)
+            schedule.scheduleJob('0 3 * * *', async function() {
                 try {
-                    const updatedCount = await Player.updateMany(
-                        {},
-                        {
-                            plastico: 0,
-                            seda: 0,
-                            folha: 0,
-                            cascaSemente: 0,
-                            lastReset: new Date(),
-                            metGoal: false
+                    const jogadores = await Player.find();
+                    const now = new Date();
+                    let updates = [];
+                    for (const player of jogadores) {
+                        let tempoSemMeta = 0;
+                        if (!player.metGoal && player.lastChecked) {
+                            tempoSemMeta = Math.floor((now - player.lastChecked) / 60000); // minutos
                         }
-                    );
-                    console.log(`Valores de farm resetados para ${updatedCount.modifiedCount} jogadores.`);
+                        updates.push({
+                            updateOne: {
+                                filter: { discordId: player.discordId },
+                                update: {
+                                    plastico: 0,
+                                    seda: 0,
+                                    folha: 0,
+                                    cascaSemente: 0,
+                                    lastReset: now,
+                                    metGoal: false,
+                                    tempoSemMeta: tempoSemMeta
+                                }
+                            }
+                        });
+                    }
+                    if (updates.length > 0) {
+                        await Player.bulkWrite(updates);
+                    }
+                    console.log(`Reset diário às 00:00 realizado para ${updates.length} jogadores.`);
                 } catch (error) {
-                    console.error('Erro ao resetar valores diários:', error);
+                    console.error('Erro ao resetar valores diários às 00:00:', error);
                 }
             });
 
