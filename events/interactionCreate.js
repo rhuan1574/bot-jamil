@@ -6,9 +6,11 @@ const { members} = require("./ready.js")
 
 // Sistema de metas e controle diário
 const metas = {
-    cascaSemente: 80,
+    aluminio: 80,
     folha: 100,
-    seda: 40,
+    borracha: 40,
+    cobre: 40,
+    ferro: 40,
     plastico: 40
 };
 
@@ -34,9 +36,11 @@ const handleComprovanteFarm = async (msg, interaction, player, metas, deleteDela
         .setDescription(`O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`)
         .addFields(
             { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
-            { name: "📄 Seda", value: `${player.seda}/${metas.seda}` },
-            { name: "🍃 Folha", value: `${player.folha}/${metas.folha}` },
-            { name: "🌱 Casca de Semente", value: `${player.cascaSemente}/${metas.cascaSemente}` }
+            { name: "📄 Folha", value: `${player.folha}/${metas.folha}` },
+            { name: "🍃 Borracha", value: `${player.borracha}/${metas.borracha}` },
+            { name: "🍃 Cobre", value: `${player.cobre}/${metas.cobre}` },
+            { name: "🍃 Ferro", value: `${player.ferro}/${metas.ferro}` },
+            { name: "🌱 Aluminio", value: `${player.aluminio}/${metas.aluminio}` }
         )
         .setImage(`attachment://${attachment.name}`)
         .setColor("#00FF00")
@@ -183,10 +187,13 @@ module.exports = {
                             .setCustomId("modal-farm")
                             .setTitle("📝 Registro de Itens do Farm");
                         const inputs = [
-                            { id: "plastico", label: "Quantidade de Plástico", placeholder: "Digite a quantidade de plástico" },
-                            { id: "seda", label: "Quantidade de Seda", placeholder: "Digite a quantidade de seda" },
-                            { id: "folha", label: "Quantidade de Folha", placeholder: "Digite a quantidade de folha" },
-                            { id: "casca-de-semente", label: "Quantidade de Casca de Semente", placeholder: "Digite a quantidade de casca de semente" }
+                            { id: "plastico", label: "Quantidade de Plástico", placeholder: "Digite a quantidade de Plástico" },
+                            { id: "borracha", label: "Quantidade de Borracha", placeholder: "Digite a quantidade de Borracha" },
+                            { id: 'ferro', label: "Quantidade de Ferro", placeholder: "Digite a quantidade de Ferro" },
+                            { id: 'aluminio', label: "Quantidade de Aluminio", placeholder: "Digite a quantidade de Aluminio" },
+
+                            { id: "folha", label: "Quantidade de Folha", placeholder: "Digite a quantidade de Folha" },
+                            { id: "cobre", label: "Quantidade de Cobre", placeholder: "Digite a quantidade de Cobre" }
                         ].map(input => new TextInputBuilder()
                             .setCustomId(input.id)
                             .setLabel(input.label)

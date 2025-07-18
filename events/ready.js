@@ -104,12 +104,12 @@ module.exports = {
                     if (nonCompliantPlayers.length > 0) {
                         const embed = new EmbedBuilder()
                             .setTitle('⚠️ Aviso: Jogadores sem Meta')
-                            .setDescription('Os seguintes jogadores não bateram a meta hoje:\n' +
+                            .setDescription('Os seguintes jogadores não bateram a meta da semana:\n' +
                                 nonCompliantPlayers.map(p => `- <@${p.discordId}> (${p.username})`).join('\n'))
                             .setColor(0xFF0000)
                             .setTimestamp();
 
-                        const channelId = '1372939105813397555'; // ID do canal notificacoes-membros
+                        const channelId = '1395587086337183744'; // ID do canal notificacoes-membros
                         const channel = client.channels.cache.get(channelId);
                         if (channel) {
                             await channel.send({content: `Atenção <@&1292671789222334514>!`, embeds: [embed] });
