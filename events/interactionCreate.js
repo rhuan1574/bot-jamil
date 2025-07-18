@@ -15,7 +15,7 @@ const metas = {
 };
 
 // Valor diário em dinheiro
-const VALOR_DIARIO = 25000;
+const VALOR_DIARIO = 12000;
 
 // Função para verificar isenção de cobrança
 function isIsento(player) {
@@ -205,7 +205,7 @@ module.exports = {
                         await interaction.showModal(modalFarm);
                         break;
                     case "registro":
-                        const roleName = "┃Membros";
+                        const roleName = "🧰 | Membro Benny's";
                         const member = interaction.member;
                         const role = member.roles.cache.find((r) => r.name === roleName);
 
