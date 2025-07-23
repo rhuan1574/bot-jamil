@@ -1,0 +1,26 @@
+{
+  "parcerias": [
+    {
+      "messageId": "1386505103611134032",
+      "channelId": "1386010444774510644",
+      "nomeOrganizacao": "Bennys Tunning",
+      "nomeDono": "Ana lopes",
+      "localizacao": "garagem 10",
+      "produto": "Placa",
+      "contato": "123-456",
+      "registradoPor": "rxnext09",
+      "dataRegistro": "2025-06-23T00:36:16.876Z"
+    },
+    {
+      "messageId": "1386506370395934761",
+      "channelId": "1386010444774510644",
+      "nomeOrganizacao": "sdf",
+      "nomeDono": "sdf",
+      "localizacao": "sdf",
+      "produto": "sdf",
+      "contato": "sdf",
+      "registradoPor": "rxnext09",
+      "dataRegistro": "2025-06-23T00:41:18.954Z"
+    }
+  ]
+}
