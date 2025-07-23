@@ -1077,10 +1077,7 @@ module.exports = {
                       },
                     ])
                     .setImage(attachment.url)
-                    .setFooter({
-                      text: `Gerado por ${interaction.user.tag}`,
-                      iconURL: interaction.user.displayAvatarURL(),
-                    })
+                    .setFooter("Sistema de Tunagem Benny's")
                     .setColor("#00ff00")
                     .setTimestamp();
                   await dm.send({
@@ -1179,6 +1176,7 @@ module.exports = {
                   ])
                   .setImage(attachment1.url)
                   .setThumbnail(attachment2.url)
+                  .setFooter("Sistema de Tunagem Benny's")
                   .setColor("#00ff00")
                   .setTimestamp();
                 await dm.send({
