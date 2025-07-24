@@ -37,11 +37,11 @@ const reciboTunagemStates = new Map();
 
 // Sistema de metas e controle diário
 const metas = {
-  aluminio: 80,
-  borracha: 40,
-  cobre: 40,
-  ferro: 40,
-  plastico: 40,
+  aluminio: 80, // 123 DIARIO
+  borracha: 40, // 93 DIARIO
+  cobre: 40, // 93 DIARIO
+  ferro: 40, // 123 DIARIO
+  plastico: 40,// 93 DIARIO
 };
 
 // Valor diário em dinheiro

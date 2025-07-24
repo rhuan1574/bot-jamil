@@ -5,12 +5,12 @@ const { setupAgendador } = require('../agendador/agendador.js');
 const Player = require('../database/models/Player');
 
 const metas = {
-    cascaSemente: 120,
-    folha: 120,
-    seda: 120,
-    plastico: 40
+  aluminio: 80, // 123 DIARIO
+  borracha: 40, // 93 DIARIO
+  cobre: 40, // 93 DIARIO
+  ferro: 40, // 123 DIARIO
+  plastico: 40,// 93 DIARIO
 };
-
 module.exports = {
     name: Events.ClientReady,
     once: true,
@@ -56,9 +56,10 @@ module.exports = {
                                 filter: { discordId: player.discordId },
                                 update: {
                                     plastico: 0,
-                                    seda: 0,
-                                    folha: 0,
-                                    cascaSemente: 0,
+                                    borracha: 0,
+                                    cobre: 0,
+                                    aluminio: 0,
+                                    ferro: 0,
                                     lastReset: now,
                                     metGoal: false,
                                     tempoSemMeta: tempoSemMeta
@@ -86,9 +87,10 @@ module.exports = {
                     const players = await Player.find({
                         $or: [
                             { plastico: { $lt: metas.plastico } },
-                            { seda: { $lt: metas.seda } },
-                            { folha: { $lt: metas.folha } },
-                            { cascaSemente: { $lt: metas.cascaSemente } }
+                            { cobre: { $lt: metas.cobre } },
+                            { aluminio: { $lt: metas.aluminio } },
+                            { ferro: { $lt: metas.ferro } },
+                            { borracha: { $lt: metas.borracha } }
                         ],
                         lastReset: { $gte: today }
                     });
@@ -96,7 +98,7 @@ module.exports = {
 
                     const nonCompliantPlayers = players.filter(player => {
                         const isento = player.isencaoAte && new Date(player.isencaoAte) > new Date();
-                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento} - Valores: plastico=${player.plastico}, seda=${player.seda}, folha=${player.folha}, cascaSemente=${player.cascaSemente}`);
+                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento} - Valores: plastico=${player.plastico}, cobre=${player.cobre}, aluminio=${player.aluminio}, ferro=${player.ferro}, borracha=${player.borracha}`);
                         return !isento;
                     });
                     console.log(`Jogadores não conformes após filtro de isenção: ${nonCompliantPlayers.length}`);
