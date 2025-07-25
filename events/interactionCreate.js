@@ -37,16 +37,16 @@ const reciboTunagemStates = new Map();
 
 // Sistema de metas e controle diário
 const metas = {
-  aluminio: 80, // 123 DIARIO
-  borracha: 40, // 93 DIARIO
-  cobre: 40, // 93 DIARIO
-  ferro: 40, // 123 DIARIO
-  plastico: 40,// 93 DIARIO
+  aluminio: 80, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
+  borracha: 40, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA
+  cobre: 40, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
+  ferro: 40, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA
+  plastico: 40,// 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
 };
 
 // Valor diário em dinheiro
 const VALOR_DIARIO = 12000;
-
+nj
 // Função para verificar isenção de cobrança
 function isIsento(player) {
   if (!player || !player.isencaoAte) return false;
