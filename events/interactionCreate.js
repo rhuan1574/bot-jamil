@@ -524,7 +524,7 @@ module.exports = {
               .setTitle("Registro");
 
             const input = new TextInputBuilder()
-              .setCustomId("nome-game")
+              .setCustomId("nomeGame")
               .setLabel("Nome in game")
               .setStyle(TextInputStyle.Short)
               .setRequired(true);

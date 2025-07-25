@@ -2,7 +2,7 @@ const buscarCanal = require('../../utils/buscarCanal');
 const criarEmbed = require('../../utils/criarEmbed');
 
 module.exports = async function handleAusencias(interaction) {
-  const nomeGameAusencias = interaction.fields.getTextInputValue('nome-game');
+  const nomeGameAusencias = interaction.fields.getTextInputValue('nomeGame');
   const idAusencias = interaction.fields.getTextInputValue('id');
   const motivo = interaction.fields.getTextInputValue('motivo');
   const duracao = interaction.fields.getTextInputValue('duracao');
