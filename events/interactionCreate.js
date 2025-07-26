@@ -1643,6 +1643,7 @@ module.exports = {
           }
           case "modal-parcerias":
             await handleParcerias(interaction);
+            break;
           case "modal-ausências":
             await handleAusencias(interaction);
             break;
