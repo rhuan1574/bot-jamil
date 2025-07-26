@@ -1077,7 +1077,7 @@ module.exports = {
                       },
                     ])
                     .setImage(attachment.url)
-                    .setFooter("Sistema de Tunagem Benny's")
+                    .setFooter("Sistema de Tunagem Bennys")
                     .setColor("#00ff00")
                     .setTimestamp();
                   await dm.send({
