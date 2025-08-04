@@ -1338,6 +1338,47 @@ module.exports = {
             }
             return;
           }
+          case "tunagem_menu": {
+            // Handler do select menu de tunagem
+            const state = reciboTunagemStates.get(interaction.message.id);
+            if (!state || state.userId !== interaction.user.id) {
+              await interaction.reply({
+                content: "❌ Não foi possível recuperar o estado do recibo. Tente novamente.",
+                flags: MessageFlags.Ephemeral,
+              });
+              return;
+            }
+            // Atualiza os serviços selecionados
+            state.selectedServices = interaction.values;
+            state.servicesDescription = interaction.values
+              .map(
+                (value) =>
+                  tunagem.find((item) => item.value === value)?.label || "Serviço desconhecido"
+              )
+              .join("\n");
+            reciboTunagemStates.set(interaction.message.id, state);
+
+            // Atualiza embed e componentes
+            const updatedEmbed = new EmbedBuilder()
+              .setTitle("Confirme se as opções estão corretas, caso esteja, pressione o botão abaixo para confirmar.")
+              .setFields([
+                {
+                  name: "Serviços Selecionados",
+                  value: state.servicesDescription || "Nenhum serviço selecionado.",
+                  inline: false,
+                },
+              ])
+              .setColor("#0099ff");
+
+            // Habilita/desabilita botão de confirmar
+            state.rows[1].components[0].setDisabled(state.selectedServices.length === 0);
+
+            await interaction.update({
+              embeds: [updatedEmbed],
+              components: state.rows,
+            });
+            break;
+          }
           case "acao_select": {
             const state = acaoStates.get(interaction.message.id);
             if (!state || state.userId !== interaction.user.id) {
