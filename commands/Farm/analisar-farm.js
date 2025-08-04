@@ -56,10 +56,10 @@ module.exports = {
                     (!player.metGoal && player.tempoSemMeta ? `⏳ Tempo sem bater a meta: ${formatarTempo(player.tempoSemMeta)}\n` : '') +
                     `\n**Recursos Atuais:**\n` +
                     `💰 Dinheiro: ${player.dinheiro}\n` +
-                    `🧪 Plástico: ${player.plastico}\n` +
-                    `📄 Seda: ${player.seda}\n` +
-                    `🌿 Folha: ${player.folha}\n` +
-                    `🌱 Casca/Semente: ${player.cascaSemente}\n\n` +
+                    `🧪 Borracha: ${player.borracha}\n` +
+                    `📄 Cobre: ${player.cobre}\n` +
+                    `🌿 Ferro: ${player.ferro}\n` +
+                    `🌱 Aluminio: ${player.aluminio}\n\n` +
                     `**Informações Adicionais:**\n` +
                     `📅 Último reset: ${player.lastReset ? new Date(player.lastReset).toLocaleString('pt-BR') : 'Nunca'}\n` +
                     `🎫 Isenção até: ${player.isencaoAte ? new Date(player.isencaoAte).toLocaleString('pt-BR') : 'Sem isenção'}`

@@ -196,6 +196,93 @@ const CHANNELS = {
   RECEBIMENTO: "📦-recebimento-de-carga",
 };
 
+const armas = [
+  {
+    nome: "Pistola Colt .45",
+    spawn: "weapon_pistol",
+    valor: "R$ 25.000 - R$ 35.000",
+    limite: "1 por cidadão por semana"
+  },
+  {
+    nome: "Pistola M1911",
+    spawn: "weapon_heavypistol",
+    valor: "R$ 35.000 - R$ 45.000",
+    limite: ""
+  },
+  {
+    nome: "Sub Skorpion VZ61",
+    spawn: "weapon_minismg",
+    valor: "R$ 50.000",
+    limite: ""
+  },
+  {
+    nome: "Sub Uzi",
+    spawn: "weapon_microsmg",
+    valor: "R$ 50.000",
+    limite: ""
+  },
+  {
+    nome: "Sub M-Tar 21",
+    spawn: "weapon_advancedrifle",
+    valor: "R$ 70.000",
+    limite: ""
+  },
+  {
+    nome: "Fuzil AK-103",
+    spawn: "weapon_assaultrifle_mk2",
+    valor: "R$ 110.000",
+    limite: ""
+  },
+  {
+    nome: "Fuzil G36C",
+    spawn: "weapon_specialcarbine_mk2",
+    valor: "R$ 140.000",
+    limite: ""
+  },
+  {
+    nome: "Escopeta Remington",
+    spawn: "weapon_pumpshotgun_mk2",
+    valor: "R$ 100.000",
+    limite: ""
+  }
+];
+
+const flippers = [
+  { nome: "Flipper MK5", valor: "R$ 100.000", limite: "2 por grupo" },
+  { nome: "Flipper MK4", valor: "R$ 80.000", limite: "2 por grupo" },
+  { nome: "Flipper MK3", valor: "R$ 70.000", limite: "2 por grupo" },
+  { nome: "Chave Platina", valor: "R$ 50.000", limite: "3 por grupo" },
+  { nome: "Chave Gold", valor: "R$ 40.000", limite: "2 por grupo" },
+  { nome: "Flipper MK2", valor: "R$ 30.000", limite: "N/A" },
+  { nome: "Flipper MK1", valor: "R$ 20.000", limite: "N/A" }
+];
+
+const municoes = [
+  { tipo: "5mm", valor: "R$ 100 - R$ 120" },
+  { tipo: "9mm", valor: "R$ 125 - R$ 150" },
+  { tipo: "762mm", valor: "R$ 200 - R$ 250" },
+  { tipo: "12cbc", valor: "R$ 200 - R$ 250" }
+];
+
+const itensDiversos = [
+  { nome: "Drogas", valor: "R$ 120 - R$ 150" },
+  { nome: "Camisa de Força", valor: "R$ 6.000 - R$ 6.500" },
+  { nome: "Placa Clonada", valor: "R$ 5.000 - R$ 6.000" },
+  { nome: "Ticket Corrida", valor: "R$ 7.000 - R$ 12.000" },
+  { nome: "Bloqueador de Sinal", valor: "R$ 7.500 - R$ 8.500" },
+  { nome: "Masterpick", valor: "R$ 1.500 - R$ 2.500" },
+  { nome: "Adrenalina", valor: "R$ 1.000 - R$ 2.000" },
+  { nome: "C4", valor: "R$ 5.000 - R$ 6.000" },
+  { nome: "Capuz", valor: "R$ 1.000 - R$ 1.500" },
+  { nome: "Colete", valor: "R$ 4.000 - R$ 5.000" },
+  { nome: "Algema", valor: "R$ 5.000 - R$ 5.500" },
+  { nome: "Alho", valor: "R$ 4.000 - R$ 5.000" },
+  { nome: "Chimas", valor: "R$ 1.000 - R$ 1.500" },
+  { nome: "Vaselina", valor: "R$ 3.000 - R$ 3.500" },
+  { nome: "Pager", valor: "R$ 12.000" },
+  { nome: "Tesoura", valor: "R$ 1.500 - R$ 3.000" }
+];
+
 module.exports = {
   tunagem,
   itensIlegais,
@@ -203,4 +290,8 @@ module.exports = {
   TIMEOUTS,
   ROLES,
   CHANNELS,
+  armas,
+  flippers,
+  municoes,
+  itensDiversos,
 }; 

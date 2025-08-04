@@ -5,12 +5,22 @@ const { setupAgendador } = require('../agendador/agendador.js');
 const Player = require('../database/models/Player');
 
 const metas = {
-  aluminio: 80, // 123 DIARIO
-  borracha: 40, // 93 DIARIO
-  cobre: 40, // 93 DIARIO
-  ferro: 40, // 123 DIARIO
-  plastico: 40,// 93 DIARIO
+  aluminio: 220, // 123 DIARIO
+  borracha: 180, // 93 DIARIO
+  cobre: 180, // 93 DIARIO
+  ferro: 220, // 123 DIARIO
+  plastico: 180,// 93 DIARIO
 };
+const IDS_ISENTOS = [
+    '1259732363810701359', // Substitua por IDs reais
+    '1017805814473445377',
+    '204806017442250753',
+    '470005740812238848',
+    '1328138205588885525',
+    '703029368829509752',
+    '335193548565774337',
+    // ...
+];
 module.exports = {
     name: Events.ClientReady,
     once: true,
@@ -98,8 +108,9 @@ module.exports = {
 
                     const nonCompliantPlayers = players.filter(player => {
                         const isento = player.isencaoAte && new Date(player.isencaoAte) > new Date();
-                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento} - Valores: plastico=${player.plastico}, cobre=${player.cobre}, aluminio=${player.aluminio}, ferro=${player.ferro}, borracha=${player.borracha}`);
-                        return !isento;
+                        const isIdIsento = IDS_ISENTOS.includes(player.discordId);
+                        console.log(`Jogador ${player.username} (ID: ${player.discordId}) - Isento: ${isento} - ID Isento: ${isIdIsento} - Valores: plastico=${player.plastico}, cobre=${player.cobre}, aluminio=${player.aluminio}, ferro=${player.ferro}, borracha=${player.borracha}`);
+                        return !isento && !isIdIsento;
                     });
                     console.log(`Jogadores não conformes após filtro de isenção: ${nonCompliantPlayers.length}`);
 
@@ -111,10 +122,10 @@ module.exports = {
                             .setColor(0xFF0000)
                             .setTimestamp();
 
-                        const channelId = '1395587086337183744'; // ID do canal notificacoes-membros
+                        const channelId = '1398019456675876864'; // ID do canal notificacoes-membros
                         const channel = client.channels.cache.get(channelId);
                         if (channel) {
-                            await channel.send({content: `Atenção <@&1292671789222334514>!`, embeds: [embed] });
+                            await channel.send({content: `Atenção <@&1292974126386122865>!`, embeds: [embed] });
                             console.log(`Notificação enviada ao canal ${channelId} com sucesso.`);
                         } else {
                             console.error(`Canal ${channelId} não encontrado. Verifique o ID ou permissões do bot.`);

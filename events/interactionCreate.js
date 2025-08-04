@@ -37,12 +37,14 @@ const reciboTunagemStates = new Map();
 
 // Sistema de metas e controle diário
 const metas = {
-  aluminio: 80, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
-  borracha: 40, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA
-  cobre: 40, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
-  ferro: 40, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA
-  plastico: 40,// 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA
+  aluminio: 220, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  borracha: 180, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA | 300 por pessoa
+  cobre: 180, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  ferro: 220, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA | 200 por pessoa
+  plastico: 180, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
 };
+
+const acaoStates = new Map();
 
 // Valor diário em dinheiro
 const VALOR_DIARIO = 12000;
@@ -384,7 +386,7 @@ module.exports = {
         );
         const errorMessage = {
           content: "❌ Houve um erro ao executar este comando!",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         };
         try {
           if (interaction.replied || interaction.deferred) {
@@ -403,19 +405,29 @@ module.exports = {
       try {
         switch (customId) {
           case "button-dinheiro":
-            const modalDinheiro = new ModalBuilder()
-              .setCustomId("modal-dinheiro")
-              .setTitle("💵 Pagamento em Dinheiro");
-            const inputValor = new TextInputBuilder()
-              .setCustomId("valor-dinheiro")
-              .setLabel("Valor do Pagamento")
-              .setPlaceholder(`Digite o valor (múltiplo de ${VALOR_DIARIO})`)
-              .setStyle(TextInputStyle.Short)
-              .setRequired(true);
-            modalDinheiro.addComponents(
-              new ActionRowBuilder().addComponents(inputValor)
-            );
-            await interaction.showModal(modalDinheiro);
+            try {
+              const modalDinheiro = new ModalBuilder()
+                .setCustomId("modal-dinheiro")
+                .setTitle("💵 Pagamento em Dinheiro");
+              const inputValor = new TextInputBuilder()
+                .setCustomId("valor-dinheiro")
+                .setLabel("Valor do Pagamento")
+                .setPlaceholder(`Digite o valor (múltiplo de ${VALOR_DIARIO})`)
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+              modalDinheiro.addComponents(
+                new ActionRowBuilder().addComponents(inputValor)
+              );
+              await interaction.showModal(modalDinheiro);
+            } catch (modalError) {
+              console.error("Erro ao mostrar modal dinheiro:", modalError);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                  content: "❌ Erro ao abrir o formulário. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+              }
+            }
             break;
 
           case "button-farm":
@@ -444,53 +456,64 @@ module.exports = {
             await interaction.reply({
               embeds: [embedFarm],
               components: [rowFarm],
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
             break;
 
           case "info-farm":
-            const modalFarm = new ModalBuilder()
-              .setCustomId("modal-farm")
-              .setTitle("📝 Registro de Itens do Farm");
-            const inputs = [
-              {
-                id: "plastico",
-                label: "Quantidade de Plástico",
-                placeholder: "Digite a quantidade de Plástico",
-              },
-              {
-                id: "borracha",
-                label: "Quantidade de Borracha",
-                placeholder: "Digite a quantidade de Borracha",
-              },
-              {
-                id: "ferro",
-                label: "Quantidade de Ferro",
-                placeholder: "Digite a quantidade de Ferro",
-              },
-              {
-                id: "aluminio",
-                label: "Quantidade de Aluminio",
-                placeholder: "Digite a quantidade de Aluminio",
-              },
-              {
-                id: "cobre",
-                label: "Quantidade de Cobre",
-                placeholder: "Digite a quantidade de Cobre",
-              },
-            ].map((input) =>
-              new TextInputBuilder()
-                .setCustomId(input.id)
-                .setLabel(input.label)
-                .setPlaceholder(input.placeholder)
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-            );
-            modalFarm.addComponents(
-              inputs.map((input) => new ActionRowBuilder().addComponents(input))
-            );
-            await interaction.showModal(modalFarm);
+            try {
+              const modalFarm = new ModalBuilder()
+                .setCustomId("modal-farm")
+                .setTitle("📝 Registro de Itens do Farm");
+              const inputs = [
+                {
+                  id: "plastico",
+                  label: "Quantidade de Plástico",
+                  placeholder: "Digite a quantidade de Plástico",
+                },
+                {
+                  id: "borracha",
+                  label: "Quantidade de Borracha",
+                  placeholder: "Digite a quantidade de Borracha",
+                },
+                {
+                  id: "ferro",
+                  label: "Quantidade de Ferro",
+                  placeholder: "Digite a quantidade de Ferro",
+                },
+                {
+                  id: "aluminio",
+                  label: "Quantidade de Aluminio",
+                  placeholder: "Digite a quantidade de Aluminio",
+                },
+                {
+                  id: "cobre",
+                  label: "Quantidade de Cobre",
+                  placeholder: "Digite a quantidade de Cobre",
+                },
+              ].map((input) =>
+                new TextInputBuilder()
+                  .setCustomId(input.id)
+                  .setLabel(input.label)
+                  .setPlaceholder(input.placeholder)
+                  .setStyle(TextInputStyle.Short)
+                  .setRequired(true)
+              );
+              modalFarm.addComponents(
+                inputs.map((input) => new ActionRowBuilder().addComponents(input))
+              );
+              await interaction.showModal(modalFarm);
+            } catch (modalError) {
+              console.error("Erro ao mostrar modal farm:", modalError);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                  content: "❌ Erro ao abrir o formulário. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+              }
+            }
             break;
+
           case "registro":
             // Verificar se o usuário já tem o cargo de Membro Benny's
             const cargoMembro = interaction.guild.roles.cache.find(
@@ -561,8 +584,19 @@ module.exports = {
             const row5 = new ActionRowBuilder().addComponents(input5);
 
             modal.addComponents(row1, row2, row3, row4, row5);
-            await interaction.showModal(modal);
+            try {
+              await interaction.showModal(modal);
+            } catch (modalError) {
+              console.error("Erro ao mostrar modal registro:", modalError);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                  content: "❌ Erro ao abrir o formulário. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+              }
+            }
             break;
+
           case "parcerias":
             // Verificar se o usuário tem o cargo de Líder
             const cargoLiderParcerias = interaction.guild.roles.cache.find(
@@ -648,8 +682,19 @@ module.exports = {
               rowParcerias5
             );
 
-            await interaction.showModal(modalParcerias);
+            try {
+              await interaction.showModal(modalParcerias);
+            } catch (modalError) {
+              console.error("Erro ao mostrar modal parcerias:", modalError);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                  content: "❌ Erro ao abrir o formulário. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+              }
+            }
             break;
+
           case "remove-parceria":
             try {
               // Verificar se o usuário tem o cargo de Líder
@@ -772,6 +817,7 @@ module.exports = {
               });
             }
             break;
+
           case "button-ausencias":
             const modalAusencias = new ModalBuilder()
               .setCustomId("modal-ausências")
@@ -823,7 +869,17 @@ module.exports = {
               rowAusencias4
             );
 
-            await interaction.showModal(modalAusencias);
+            try {
+              await interaction.showModal(modalAusencias);
+            } catch (modalError) {
+              console.error("Erro ao mostrar modal ausencias:", modalError);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                  content: "❌ Erro ao abrir o formulário. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+              }
+            }
             break;
 
           case "recibo":
@@ -861,7 +917,8 @@ module.exports = {
 
               // Collector só para o menu de seleção
               const filterMenu = (i) =>
-                i.customId === "tunagem_menu" && i.user.id === interaction.user.id;
+                i.customId === "tunagem_menu" &&
+                i.user.id === interaction.user.id;
               const menuCollector = replyMsg.createMessageComponentCollector({
                 filter: filterMenu,
                 time: TIMEOUT_MENU,
@@ -878,7 +935,9 @@ module.exports = {
                   .join("\n");
 
                 // Habilita o botão se houver seleção
-                rows[1].components[0].setDisabled(selectedServices.length === 0);
+                rows[1].components[0].setDisabled(
+                  selectedServices.length === 0
+                );
 
                 const updatedEmbed = new EmbedBuilder()
                   .setTitle(
@@ -887,7 +946,8 @@ module.exports = {
                   .setFields([
                     {
                       name: "Serviços Selecionados",
-                      value: servicesDescription || "Nenhum serviço selecionado.",
+                      value:
+                        servicesDescription || "Nenhum serviço selecionado.",
                       inline: false,
                     },
                   ])
@@ -944,80 +1004,138 @@ module.exports = {
               }
             }
             break;
-          case "confirmar": {
-            // Recupera estado do Map global
-            const state = reciboTunagemStates.get(interaction.message.id);
-            if (!state || state.userId !== interaction.user.id) {
-              await interaction.reply({
-                content: "❌ Não foi possível recuperar o estado do recibo. Tente novamente.",
-                ephemeral: true,
+
+          case "confirmar":
+            {
+              // Recupera estado do Map global
+              const state = reciboTunagemStates.get(interaction.message.id);
+              if (!state || state.userId !== interaction.user.id) {
+                await interaction.reply({
+                  content:
+                    "❌ Não foi possível recuperar o estado do recibo. Tente novamente.",
+                  flags: MessageFlags.Ephemeral,
+                });
+                return;
+              }
+              const {
+                rows,
+                selectedServices,
+                servicesDescription,
+                TIMEOUT_IMAGE,
+                DELETE_DELAY,
+              } = state;
+              if (!selectedServices || selectedServices.length === 0) {
+                await interaction.reply({
+                  content:
+                    "❌ Você precisa selecionar pelo menos um serviço antes de confirmar.",
+                  flags: MessageFlags.Ephemeral,
+                });
+                return;
+              }
+              // Desabilita componentes após confirmação
+              rows.forEach((row) =>
+                row.components.forEach((comp) => comp.setDisabled(true))
+              );
+              const desc =
+                servicesDescription && servicesDescription.trim().length > 0
+                  ? servicesDescription
+                  : "Nenhum serviço selecionado.";
+              const confirmEmbed = new EmbedBuilder()
+                .setTitle("Recibo Confirmado!")
+                .setDescription(
+                  `Serviços confirmados:\n${desc}\n\nSelecione o tipo de tunagem para continuar.`
+                )
+                .setColor("#00ff00");
+
+              // Select menu para tipo de tunagem
+              const tipoMenu = new StringSelectMenuBuilder()
+                .setCustomId("tipo_tunagem")
+                .setPlaceholder("Selecione o tipo de tunagem...")
+                .addOptions([
+                  {
+                    label: "Comum",
+                    value: "comum",
+                    description: "Tunagem comum para clientes normais",
+                    emoji: "🚗",
+                  },
+                  {
+                    label: "Policial/VIP",
+                    value: "policial_vip",
+                    description:
+                      "Tunagem para policial ou VIP (exige 2 comprovantes)",
+                    emoji: "🚓",
+                  },
+                ]);
+              const tipoRow = new ActionRowBuilder().addComponents(tipoMenu);
+
+              await interaction.update({
+                embeds: [confirmEmbed],
+                components: [tipoRow],
               });
+              // Atualiza estado para próxima etapa
+              state.rows = [tipoRow];
+              reciboTunagemStates.set(interaction.message.id, state);
               return;
             }
-            const { rows, selectedServices, servicesDescription, TIMEOUT_IMAGE, DELETE_DELAY } = state;
-            if (!selectedServices || selectedServices.length === 0) {
-              await interaction.reply({
-                content: "❌ Você precisa selecionar pelo menos um serviço antes de confirmar.",
-                ephemeral: true,
-              });
+            break;
+
+          case "button-elite":
+            if (interaction.replied || interaction.deferred) {
+              // Já foi respondida, não tente mostrar o modal
               return;
             }
-            // Desabilita componentes após confirmação
-            rows.forEach((row) =>
-              row.components.forEach((comp) => comp.setDisabled(true))
+            const modalElite = new ModalBuilder()
+              .setCustomId("modal-elite")
+              .setTitle("Metas da Elite Bennys");
+
+            const inputDinheiroSujo = new TextInputBuilder()
+              .setCustomId("dinheiro-elite")
+              .setLabel("Meta do Dinheiro sujo")
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true)
+              .setMaxLength(20)
+              .setPlaceholder('Somente valores inteiros. Ex: "10.000, 27.000"');
+
+            const rowModalElite = new ActionRowBuilder().addComponents(
+              inputDinheiroSujo
             );
-            const desc =
-              servicesDescription && servicesDescription.trim().length > 0
-                ? servicesDescription
-                : "Nenhum serviço selecionado.";
-            const confirmEmbed = new EmbedBuilder()
-              .setTitle("Recibo Confirmado!")
-              .setDescription(
-                `Serviços confirmados:\n${desc}\n\nSelecione o tipo de tunagem para continuar.`
-              )
-              .setColor("#00ff00");
 
-            // Select menu para tipo de tunagem
-            const tipoMenu = new StringSelectMenuBuilder()
-              .setCustomId("tipo_tunagem")
-              .setPlaceholder("Selecione o tipo de tunagem...")
-              .addOptions([
-                {
-                  label: "Comum",
-                  value: "comum",
-                  description: "Tunagem comum para clientes normais",
-                  emoji: "🚗",
-                },
-                {
-                  label: "Policial/VIP",
-                  value: "policial_vip",
-                  description: "Tunagem para policial ou VIP (exige 2 comprovantes)",
-                  emoji: "🚓",
-                },
-              ]);
-            const tipoRow = new ActionRowBuilder().addComponents(tipoMenu);
+            modalElite.addComponents(rowModalElite);
+            await interaction.showModal(modalElite);
+            break;
 
-            await interaction.update({
-              embeds: [confirmEmbed],
-              components: [tipoRow],
-            });
-            // Atualiza estado para próxima etapa
-            state.rows = [tipoRow];
-            reciboTunagemStates.set(interaction.message.id, state);
-            return;
-          }
           default:
             await interaction.reply({
               content: "❌ Opção inválida!",
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
         }
       } catch (error) {
         console.error("Erro ao processar interação do botão:", error);
-        await interaction.reply({
-          content: "❌ Ocorreu um erro ao processar sua solicitação!",
-          ephemeral: true,
-        });
+        
+        // Se o erro for relacionado a interação já reconhecida, não tentamos responder novamente
+        if (error.code === 40060 || error.code === 10062) {
+          console.log("Interação já foi processada ou expirou, ignorando erro.");
+          return;
+        }
+        
+        try {
+          // Verifica se a interação já foi respondida
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: "❌ Ocorreu um erro ao processar sua solicitação!",
+              flags: MessageFlags.Ephemeral,
+            });
+          } else if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+              content: "❌ Ocorreu um erro ao processar sua solicitação!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+          // Se a interação já foi respondida com showModal, não podemos responder novamente
+        } catch (err) {
+          console.error("Erro ao enviar mensagem de erro:", err);
+        }
       }
     }
     if (interaction.isStringSelectMenu()) {
@@ -1029,8 +1147,9 @@ module.exports = {
             const state = reciboTunagemStates.get(interaction.message.id);
             if (!state || state.userId !== interaction.user.id) {
               await interaction.reply({
-                content: "❌ Não foi possível recuperar o estado do recibo. Tente novamente.",
-                ephemeral: true,
+                content:
+                  "❌ Não foi possível recuperar o estado do recibo. Tente novamente.",
+                flags: MessageFlags.Ephemeral,
               });
               return;
             }
@@ -1052,15 +1171,19 @@ module.exports = {
                   )
                   .setColor("#0099FF");
                 await dm.send({ embeds: [embedPrivado] });
-                const instructionMsg = (await dm.messages.fetch({ limit: 1 })).first();
+                const instructionMsg = (
+                  await dm.messages.fetch({ limit: 1 })
+                ).first();
                 const imageFilter = (m) =>
                   m.author.id === interaction.user.id && m.attachments.size > 0;
-                const collected = await dm.awaitMessages({
-                  filter: imageFilter,
-                  max: 1,
-                  time: TIMEOUT_IMAGE,
-                  errors: ["time"],
-                }).catch(() => null);
+                const collected = await dm
+                  .awaitMessages({
+                    filter: imageFilter,
+                    max: 1,
+                    time: TIMEOUT_IMAGE,
+                    errors: ["time"],
+                  })
+                  .catch(() => null);
                 if (collected && collected.size > 0) {
                   const msg = collected.first();
                   const attachment = msg.attachments.first();
@@ -1077,11 +1200,12 @@ module.exports = {
                       },
                     ])
                     .setImage(attachment.url)
-                    .setFooter({text: "Sistema de Tunagem Benny's" })
+                    .setFooter({ text: "Sistema de Tunagem Benny's" })
                     .setColor("#00ff00")
                     .setTimestamp();
                   await dm.send({
-                    content: "✅ Imagem recebida com sucesso! Seu recibo foi registrado.",
+                    content:
+                      "✅ Imagem recebida com sucesso! Seu recibo foi registrado.",
                     embeds: [receiptEmbed],
                   });
                   await Promise.all([
@@ -1112,15 +1236,19 @@ module.exports = {
                   )
                   .setColor("#0099FF");
                 await dm.send({ embeds: [embedPagamento] });
-                const instructionMsg1 = (await dm.messages.fetch({ limit: 1 })).first();
+                const instructionMsg1 = (
+                  await dm.messages.fetch({ limit: 1 })
+                ).first();
                 const imageFilter = (m) =>
                   m.author.id === interaction.user.id && m.attachments.size > 0;
-                const collected1 = await dm.awaitMessages({
-                  filter: imageFilter,
-                  max: 1,
-                  time: TIMEOUT_IMAGE,
-                  errors: ["time"],
-                }).catch(() => null);
+                const collected1 = await dm
+                  .awaitMessages({
+                    filter: imageFilter,
+                    max: 1,
+                    time: TIMEOUT_IMAGE,
+                    errors: ["time"],
+                  })
+                  .catch(() => null);
                 if (!collected1 || collected1.size === 0) {
                   await dm.send({
                     content:
@@ -1139,13 +1267,17 @@ module.exports = {
                   )
                   .setColor("#0099FF");
                 await dm.send({ embeds: [embedPlaca] });
-                const instructionMsg2 = (await dm.messages.fetch({ limit: 1 })).first();
-                const collected2 = await dm.awaitMessages({
-                  filter: imageFilter,
-                  max: 1,
-                  time: TIMEOUT_IMAGE,
-                  errors: ["time"],
-                }).catch(() => null);
+                const instructionMsg2 = (
+                  await dm.messages.fetch({ limit: 1 })
+                ).first();
+                const collected2 = await dm
+                  .awaitMessages({
+                    filter: imageFilter,
+                    max: 1,
+                    time: TIMEOUT_IMAGE,
+                    errors: ["time"],
+                  })
+                  .catch(() => null);
                 if (!collected2 || collected2.size === 0) {
                   await dm.send({
                     content:
@@ -1153,8 +1285,10 @@ module.exports = {
                   });
                   setTimeout(() => {
                     msg1.delete().catch(() => {});
-                    if (instructionMsg1) instructionMsg1.delete().catch(() => {});
-                    if (instructionMsg2) instructionMsg2.delete().catch(() => {});
+                    if (instructionMsg1)
+                      instructionMsg1.delete().catch(() => {});
+                    if (instructionMsg2)
+                      instructionMsg2.delete().catch(() => {});
                   }, DELETE_DELAY);
                   reciboTunagemStates.delete(interaction.message.id);
                   return;
@@ -1180,7 +1314,8 @@ module.exports = {
                   .setColor("#00ff00")
                   .setTimestamp();
                 await dm.send({
-                  content: "✅ Imagens recebidas com sucesso! Seu recibo foi registrado.",
+                  content:
+                    "✅ Imagens recebidas com sucesso! Seu recibo foi registrado.",
                   embeds: [receiptEmbed],
                 });
                 await Promise.all([
@@ -1199,22 +1334,64 @@ module.exports = {
                 reciboTunagemStates.delete(interaction.message.id);
               }
             } catch (err) {
-              console.error("Erro ao solicitar/processar comprovante por DM:", err);
-              await interaction.user.send({
-                content:
-                  "❌ Não foi possível solicitar o comprovante por DM. Por favor, certifique-se de que suas Mensagens Diretas estão abertas para este servidor.",
-              }).catch(() => {});
+              console.error(
+                "Erro ao solicitar/processar comprovante por DM:",
+                err
+              );
+              await interaction.user
+                .send({
+                  content:
+                    "❌ Não foi possível solicitar o comprovante por DM. Por favor, certifique-se de que suas Mensagens Diretas estão abertas para este servidor.",
+                })
+                .catch(() => {});
               reciboTunagemStates.delete(interaction.message.id);
             }
             return;
           }
+          case "acao_select": {
+            const state = acaoStates.get(interaction.message.id);
+            if (!state || state.userId !== interaction.user.id) {
+              await interaction.reply({
+                content: "❌ Não foi possível recuperar o estado da ação. Tente novamente.",
+                flags: MessageFlags.Ephemeral,
+              });
+              return;
+            }
+            const { acao } = state;
+            const { customId } = interaction;
+            const { value } = interaction.values[0];
+            const { label } = interaction.options.find(option => option.value === value); 
+            const embed = new EmbedBuilder()
+              .setColor('#0099ff')
+              .setTitle('Ação/Atividade')
+              .setDescription(`Você selecionou: ${label}`)
+              .setFooter({ text: 'Sistema de Ações/Atividades' });
+            await interaction.reply({ embeds: [embed] }); 
+            return;
+          }
+          default:
+            await interaction.reply({
+              content: "❌ Opção inválida!",
+              flags: MessageFlags.Ephemeral,
+            });         
         }
       } catch (error) {
         console.error("Erro ao processar interação do select menu:", error);
-        await interaction.reply({
-          content: "❌ Ocorreu um erro ao processar sua solicitação!",
-          ephemeral: true,
-        });
+        try {
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: "❌ Ocorreu um erro ao processar sua solicitação!",
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            await interaction.followUp({
+              content: "❌ Ocorreu um erro ao processar sua solicitação!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        } catch (err) {
+          console.error("Erro ao enviar mensagem de erro:", err);
+        }
       }
     }
 
@@ -1229,7 +1406,7 @@ module.exports = {
             if (isNaN(valorDinheiro)) {
               await interaction.reply({
                 content: "❌ Valor inválido! Por favor, digite um número.",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
               });
               return;
             }
@@ -1239,7 +1416,7 @@ module.exports = {
             if (!playerDinheiro) {
               await interaction.reply({
                 content: "Jogador não encontrado!",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
               });
               return;
             }
@@ -1479,7 +1656,7 @@ module.exports = {
                   }
                   if (canalNotificacao) {
                     await canalNotificacao.send({
-                      content: "<@&1292671789222334514>",
+                      content: "<@&1292974126386122865>",
                       embeds: [combinedEmbed],
                       files: [attachment],
                     });
@@ -1538,8 +1715,11 @@ module.exports = {
             const id = interaction.fields.getTextInputValue("id");
             const nomeReal = interaction.fields.getTextInputValue("nome-real");
             const telefone = interaction.fields.getTextInputValue("telefone");
-            const recrutador = interaction.fields.getTextInputValue("recrutador");
-            const membro = interaction.guild.members.cache.get(interaction.user.id);
+            const recrutador =
+              interaction.fields.getTextInputValue("recrutador");
+            const membro = interaction.guild.members.cache.get(
+              interaction.user.id
+            );
 
             if (!membro) {
               return interaction.editReply({
@@ -1552,7 +1732,8 @@ module.exports = {
             } catch (error) {
               console.error(error);
               return interaction.editReply({
-                content: "❌ Não foi possível alterar o apelido. Verifique minhas permissões.",
+                content:
+                  "❌ Não foi possível alterar o apelido. Verifique minhas permissões.",
               });
             }
 
@@ -1574,43 +1755,60 @@ module.exports = {
             // Criar anexo uma vez para reutilizar
             const buscarCanal = require("../utils/buscarCanal");
             const criarEmbed = require("../utils/criarEmbed");
-            const attachment = new AttachmentBuilder('./images/bennys.png');
+            const attachment = new AttachmentBuilder("./images/bennys.png");
 
             // Buscar o canal de logs
-            const canalLogs = buscarCanal(interaction.guild, '🔓・logs-registro');
+            const canalLogs = buscarCanal(
+              interaction.guild,
+              "🔓・logs-registro"
+            );
             if (canalLogs) {
               try {
                 const embedLog = criarEmbed({
-                  title: '📝 Novo Registro Realizado',
-                  color: '#00ff00',
+                  title: "📝 Novo Registro Realizado",
+                  color: "#00ff00",
                   thumbnail: interaction.user.displayAvatarURL(),
-                  image: 'attachment://bennys.png',
+                  image: "attachment://bennys.png",
                   fields: [
-                    { name: '👤 Usuário', value: `${interaction.user} (${interaction.user.tag})`, inline: true },
-                    { name: '🎮 Nome in Game', value: nomeGame, inline: true },
-                    { name: '🆔 ID in Game', value: id, inline: true },
-                    { name: '👨‍💼 Nome Real', value: nomeReal, inline: true },
-                    { name: '📱 Telefone', value: telefone, inline: true },
-                    { name: '🤝 Recrutador', value: recrutador, inline: true },
-                    { name: '⏰ Data/Hora', value: new Date().toLocaleString('pt-BR'), inline: false },
+                    {
+                      name: "👤 Usuário",
+                      value: `${interaction.user} (${interaction.user.tag})`,
+                      inline: true,
+                    },
+                    { name: "🎮 Nome in Game", value: nomeGame, inline: true },
+                    { name: "🆔 ID in Game", value: id, inline: true },
+                    { name: "👨‍💼 Nome Real", value: nomeReal, inline: true },
+                    { name: "📱 Telefone", value: telefone, inline: true },
+                    { name: "🤝 Recrutador", value: recrutador, inline: true },
+                    {
+                      name: "⏰ Data/Hora",
+                      value: new Date().toLocaleString("pt-BR"),
+                      inline: false,
+                    },
                   ],
                   footer: "Sistema de Registro Benny's",
                 });
-                await canalLogs.send({ embeds: [embedLog], files: [attachment] });
+                await canalLogs.send({
+                  embeds: [embedLog],
+                  files: [attachment],
+                });
               } catch (error) {
-                console.error('Erro ao enviar webhook para logs:', error);
+                console.error("Erro ao enviar webhook para logs:", error);
               }
             }
 
             // Enviar mensagem de boas-vindas no chat geral
-            const canalChatGeral = buscarCanal(interaction.guild, '💬・ᴄʜᴀᴛ-ɢᴇʀᴀʟ');
+            const canalChatGeral = buscarCanal(
+              interaction.guild,
+              "💬・ᴄʜᴀᴛ-ɢᴇʀᴀʟ"
+            );
             if (canalChatGeral) {
               try {
                 await canalChatGeral.send({
                   content: `👋 Um(a) novo(a) integrante chegou! Bem-vindo(a), ${interaction.user}, à família Benny's! @everyone`,
                 });
               } catch (error) {
-                console.error('Erro ao enviar mensagem de boas-vindas:', error);
+                console.error("Erro ao enviar mensagem de boas-vindas:", error);
               }
             }
 
@@ -1647,18 +1845,100 @@ module.exports = {
           case "modal-ausências":
             await handleAusencias(interaction);
             break;
+          case "modal-elite":
+            try {
+              const dinheiroElite = interaction.fields.getTextInputValue("dinheiro-elite");
+              
+              // Validar se o valor é um número
+              const valor = parseInt(dinheiroElite.replace(/[^\d]/g, ''));
+              if (isNaN(valor) || valor <= 0) {
+                await interaction.reply({
+                  content: "❌ Valor inválido! Por favor, digite um valor válido para a meta do dinheiro sujo.",
+                  flags: MessageFlags.Ephemeral,
+                });
+                return;
+              }
+
+              // Buscar o jogador no banco de dados
+              const player = await Player.findOne({
+                discordId: interaction.user.id,
+              });
+
+              if (!player) {
+                await interaction.reply({
+                  content: "❌ Jogador não encontrado no banco de dados!",
+                  flags: MessageFlags.Ephemeral,
+                });
+                return;
+              }
+
+              // Atualizar a meta do jogador
+              player.metaElite = valor;
+              player.lastChecked = new Date();
+              await player.save();
+
+              // Criar embed de confirmação
+              const embedConfirmacao = new EmbedBuilder()
+                .setTitle("🎯 Meta da Elite Registrada!")
+                .setDescription(`Sua meta de dinheiro sujo foi definida em **${valor.toLocaleString('pt-BR')}**`)
+                .addFields(
+                  { name: "👤 Membro", value: `${interaction.user} (${interaction.user.tag})`, inline: true },
+                  { name: "💰 Meta Definida", value: `${valor.toLocaleString('pt-BR')}`, inline: true },
+                  { name: "📅 Data", value: new Date().toLocaleString('pt-BR'), inline: true }
+                )
+                .setColor("#00FF00")
+                .setFooter({ text: "Sistema de Metas da Elite Bennys" })
+                .setTimestamp();
+
+              // Buscar canal de logs da elite
+              const canalLogsElite = interaction.guild.channels.cache.find(
+                (channel) => channel.name === "🔐・logs-elite"
+              );
+
+              // Enviar confirmação para o usuário
+              await interaction.reply({
+                embeds: [embedConfirmacao],
+                flags: MessageFlags.Ephemeral,
+              });
+
+              // Enviar log para o canal de logs (se existir)
+              if (canalLogsElite) {
+                await canalLogsElite.send({
+                  embeds: [embedConfirmacao],
+                });
+              }
+
+            } catch (error) {
+              console.error("Erro ao processar modal elite:", error);
+              await interaction.reply({
+                content: "❌ Erro ao processar sua meta da elite. Tente novamente.",
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+            break;
           default:
             await interaction.reply({
               content: "❌ Opção inválida!",
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
         }
       } catch (error) {
         console.error("Erro ao processar modal:", error);
-        await interaction.reply({
-          content: "❌ Ocorreu um erro ao processar seus dados!",
-          ephemeral: true,
-        });
+        try {
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: "❌ Ocorreu um erro ao processar seus dados!",
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            await interaction.followUp({
+              content: "❌ Ocorreu um erro ao processar seus dados!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        } catch (err) {
+          console.error("Erro ao enviar mensagem de erro:", err);
+        }
       }
     }
   },

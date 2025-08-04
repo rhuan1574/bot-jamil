@@ -16,11 +16,11 @@ function setupAgendador(client) {
             const { membros } = getCanais(guild);
             if (membros) {
                 membros.send({
-                    content: '<@&1115002717434298530>',
+                    content: '<@&1293671775258804255>',
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('🕒 Lembrete das 15h')
-                            .setDescription('Não se esqueçam de registrar os itens do farm!')
+                            .setDescription('Não se esqueçam de registrar seu farm diário!')
                             .setColor('#0099FF')
                             .setTimestamp()
                     ]
@@ -36,7 +36,7 @@ function setupAgendador(client) {
             const { gerentes } = getCanais(guild);
             if (gerentes) {
                 gerentes.send({
-                    content: '<@&1292671789222334514>',
+                    content: '<@&1292974126386122865>',
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('📊 Relatório das 23h')
