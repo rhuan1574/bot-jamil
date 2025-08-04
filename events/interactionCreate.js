@@ -915,52 +915,7 @@ module.exports = {
               });
               const replyMsg = await interaction.fetchReply();
 
-              // Collector só para o menu de seleção
-              const filterMenu = (i) =>
-                i.customId === "tunagem_menu" &&
-                i.user.id === interaction.user.id;
-              const menuCollector = replyMsg.createMessageComponentCollector({
-                filter: filterMenu,
-                time: TIMEOUT_MENU,
-              });
-
-              menuCollector.on("collect", async (i) => {
-                try {
-                  await i.deferUpdate(); // Garante que a interação não expire
-                  // Atualiza a mensagem após deferir
-                  await i.editReply({
-                    embeds: [updatedEmbed],
-                    components: rows,
-                  });
-                } catch (err) {
-                  if (err.code === 10062) {
-                    // Interação já expirada ou respondida, ignora silenciosamente
-                    console.log("Interação já expirada ou respondida.");
-                  } else {
-                    console.error("Erro ao atualizar interação do menu:", err);
-                  }
-                }
-                // Atualiza o estado no Map global para refletir a seleção atual
-                const state = reciboTunagemStates.get(replyMsg.id);
-                if (state) {
-                  state.selectedServices = selectedServices;
-                  state.servicesDescription = servicesDescription;
-                  reciboTunagemStates.set(replyMsg.id, state);
-                }
-              });
-
-              // Desabilita componentes ao encerrar o coletor
-              menuCollector.on("end", () => {
-                try {
-                  rows.forEach((row) =>
-                    row.components.forEach((comp) => comp.setDisabled(true))
-                  );
-                  replyMsg.edit({ components: rows }).catch(() => {});
-                } catch (err) {
-                  console.error("Erro ao desabilitar componentes ao encerrar o coletor:", err);
-                }
-              });
-
+              // Remover o trecho do menuCollector.on('collect', ...) e o menuCollector.on('end', ...) relacionado ao tunagem_menu, pois agora o tratamento está centralizado no switch/case 'tunagem_menu'.
               // Salva estado no Map global
               reciboTunagemStates.set(replyMsg.id, {
                 rows,
