@@ -925,43 +925,16 @@ module.exports = {
               });
 
               menuCollector.on("collect", async (i) => {
-                selectedServices = i.values;
-                servicesDescription = selectedServices
-                  .map(
-                    (value) =>
-                      tunagem.find((item) => item.value === value)?.label ||
-                      "Serviço desconhecido"
-                  )
-                  .join("\n");
-
-                // Habilita o botão se houver seleção
-                rows[1].components[0].setDisabled(
-                  selectedServices.length === 0
-                );
-
-                const updatedEmbed = new EmbedBuilder()
-                  .setTitle(
-                    "Confirme se as opções estão corretas, caso esteja, pressione o botão abaixo para confirmar."
-                  )
-                  .setFields([
-                    {
-                      name: "Serviços Selecionados",
-                      value:
-                        servicesDescription || "Nenhum serviço selecionado.",
-                      inline: false,
-                    },
-                  ])
-                  .setColor("#0099ff");
-
                 try {
-                  await i.update({
+                  await i.deferUpdate(); // Garante que a interação não expire
+                  // Atualiza a mensagem após deferir
+                  await i.editReply({
                     embeds: [updatedEmbed],
                     components: rows,
                   });
                 } catch (err) {
                   console.error("Erro ao atualizar interação do menu:", err);
                 }
-
                 // Atualiza o estado no Map global para refletir a seleção atual
                 const state = reciboTunagemStates.get(replyMsg.id);
                 if (state) {
