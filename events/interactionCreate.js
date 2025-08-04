@@ -1640,9 +1640,7 @@ module.exports = {
                     .setTimestamp()
                     .setImage(`attachment://${attachment.name}`);
 
-                  const canalLogs = interaction.guild.channels.cache.find(
-                    (channel) => channel.name === "🔐・logs-farm"
-                  );
+                    const canalLogs = interaction.guild.channels.cache.get("1330352165599838218");
                   const canalNotificacao =
                     interaction.guild.channels.cache.find(
                       (channel) => channel.name === "📌・notificacoes-gerentes"
