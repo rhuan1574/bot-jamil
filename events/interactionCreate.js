@@ -908,12 +908,12 @@ module.exports = {
               let servicesDescription = "";
 
               // Envia mensagem inicial
-              const replyMsg = await interaction.reply({
+              await interaction.reply({
                 embeds: [initialEmbed],
                 components: rows,
                 flags: 64,
-                fetchReply: true,
               });
+              const replyMsg = await interaction.fetchReply();
 
               // Collector só para o menu de seleção
               const filterMenu = (i) =>
@@ -933,7 +933,12 @@ module.exports = {
                     components: rows,
                   });
                 } catch (err) {
-                  console.error("Erro ao atualizar interação do menu:", err);
+                  if (err.code === 10062) {
+                    // Interação já expirada ou respondida, ignora silenciosamente
+                    console.log("Interação já expirada ou respondida.");
+                  } else {
+                    console.error("Erro ao atualizar interação do menu:", err);
+                  }
                 }
                 // Atualiza o estado no Map global para refletir a seleção atual
                 const state = reciboTunagemStates.get(replyMsg.id);
@@ -941,6 +946,18 @@ module.exports = {
                   state.selectedServices = selectedServices;
                   state.servicesDescription = servicesDescription;
                   reciboTunagemStates.set(replyMsg.id, state);
+                }
+              });
+
+              // Desabilita componentes ao encerrar o coletor
+              menuCollector.on("end", () => {
+                try {
+                  rows.forEach((row) =>
+                    row.components.forEach((comp) => comp.setDisabled(true))
+                  );
+                  replyMsg.edit({ components: rows }).catch(() => {});
+                } catch (err) {
+                  console.error("Erro ao desabilitar componentes ao encerrar o coletor:", err);
                 }
               });
 
