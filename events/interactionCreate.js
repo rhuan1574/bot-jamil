@@ -37,11 +37,11 @@ const reciboTunagemStates = new Map();
 
 // Sistema de metas e controle diário
 const metas = {
-  aluminio: 220, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
-  borracha: 180, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA | 300 por pessoa
-  cobre: 180, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
-  ferro: 220, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA | 200 por pessoa
-  plastico: 180, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  aluminio: 120, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  borracha: 150, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA | 300 por pessoa
+  cobre: 150, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  ferro: 150, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA | 200 por pessoa
+  plastico: 130, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
 };
 
 const acaoStates = new Map();

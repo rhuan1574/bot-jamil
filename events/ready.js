@@ -5,11 +5,11 @@ const { setupAgendador } = require('../agendador/agendador.js');
 const Player = require('../database/models/Player');
 
 const metas = {
-  aluminio: 220, // 123 DIARIO
-  borracha: 180, // 93 DIARIO
-  cobre: 180, // 93 DIARIO
-  ferro: 220, // 123 DIARIO
-  plastico: 180,// 93 DIARIO
+  aluminio: 120, // 123 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  borracha: 150, // 93 DIARIO | MAXIMO 1666 | MEDIA DE 70 POR PESSOA | 300 por pessoa
+  cobre: 150, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
+  ferro: 150, // 123 DIARIO | MAXIMO 2500 | MEDIA DE 105 POR PESSOA | 200 por pessoa
+  plastico: 130, // 93 DIARIO | MAXIMO 5000 | MEDIA DE 208 POR PESSOA | 400 por pessoa
 };
 const IDS_ISENTOS = [
     '1259732363810701359', // Substitua por IDs reais
