@@ -1722,7 +1722,7 @@ module.exports = {
             }
 
             const cargo = interaction.guild.roles.cache.find(
-              (role) => role.name === "🧰 | Membro Benny's"
+              (role) => role.name === "🧰 | Membro Versalhes"
             );
 
             if (cargo) {
