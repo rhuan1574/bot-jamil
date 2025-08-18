@@ -19,7 +19,7 @@ module.exports = {
         ephemeral: true,
       });
     }
-    const attachment = new AttachmentBuilder("./images/bennys.png");
+    const attachment = new AttachmentBuilder("./images/versalhes.png");
 
     const embed = new EmbedBuilder()
       .setTitle("Registro Automático")
@@ -27,7 +27,7 @@ module.exports = {
         "Bem vindo ao sistema de registro automático da Bennys Tunning, para se registrar corretamente, clique no botão abaixo e siga os pasos a seguir."
       )
       .setColor("Aqua")
-      .setImage("attachment://bennys.png");
+      .setImage("attachment://versalhes.png");
 
     const button = new ButtonBuilder()
       .setCustomId("registro")

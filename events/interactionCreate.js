@@ -1752,7 +1752,7 @@ module.exports = {
                   title: "📝 Novo Registro Realizado",
                   color: "#00ff00",
                   thumbnail: interaction.user.displayAvatarURL(),
-                  image: "attachment://bennys.png",
+                  image: "attachment://versalhes.png",
                   fields: [
                     {
                       name: "👤 Usuário",
