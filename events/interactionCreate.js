@@ -1739,7 +1739,7 @@ module.exports = {
             // Criar anexo uma vez para reutilizar
             const buscarCanal = require("../utils/buscarCanal");
             const criarEmbed = require("../utils/criarEmbed");
-            const attachment = new AttachmentBuilder("./images/bennys.png");
+            const attachment = new AttachmentBuilder("./images/versalhes.png");
 
             // Buscar o canal de logs
             const canalLogs = buscarCanal(
