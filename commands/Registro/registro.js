@@ -24,7 +24,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle("Registro Automático")
       .setDescription(
-        "Bem vindo ao sistema de registro automático da Bennys Tunning, para se registrar corretamente, clique no botão abaixo e siga os pasos a seguir."
+        "Bem vindo ao sistema de registro automático da Versalhes, para se registrar corretamente, clique no botão abaixo e siga os pasos a seguir."
       )
       .setColor("Aqua")
       .setImage("attachment://versalhes.png");
