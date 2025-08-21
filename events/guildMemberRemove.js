@@ -8,7 +8,7 @@ module.exports = {
 			const channelId = '1386010443868541042';
 			const channel = member.guild.channels.cache.get(channelId);
 			if (channel) {
-				await channel.send({ content: `${member.user.tag} saiu do servidor.` });
+				await channel.send({ content: `<@${member.user.id}> saiu do servidor.`, allowedMentions: { users: [member.user.id] } });
 			} else {
 				console.warn(`Canal de despedida não encontrado: ${channelId}`);
 			}
