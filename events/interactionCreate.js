@@ -799,7 +799,7 @@ module.exports = {
                       inline: false,
                     }
                   )
-                  .setFooter({ text: "Sistema de Logs Benny's" })
+                  .setFooter({ text: "Sistema de Logs Versalhes" })
                   .setTimestamp();
 
                 await canalLogsParcerias.send({ embeds: [embedRemocao] });
@@ -1770,7 +1770,7 @@ module.exports = {
                       inline: false,
                     },
                   ],
-                  footer: "Sistema de Registro Benny's",
+                  footer: "Sistema de Registro Versalhes",
                 });
                 await canalLogs.send({
                   embeds: [embedLog],
