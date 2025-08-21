@@ -12,7 +12,7 @@ module.exports = {
         .setTitle("Menu de Ausencias")
         .setDescription("Clique no botão para informar suas ausencias")
         .setColor("Green")
-        .setImage('attachment://bennys.png')
+        .setImage("attachment://versalhes.png")
 
         const button = new ButtonBuilder()
         .setCustomId("button-ausencias")

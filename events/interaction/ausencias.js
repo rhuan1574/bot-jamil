@@ -27,7 +27,7 @@ module.exports = async function handleAusencias(interaction) {
           { name: '🕒 Duração', value: duracao, inline: true },
           { name: '⏰ Data/Hora', value: new Date().toLocaleString('pt-BR'), inline: false },
         ],
-        footer: "Sistema de Ausências Benny's",
+        footer: "Sistema de Ausências Versalhes",
       });
       await canalAusencias.send({ embeds: [embedAusencias] });
     } catch (error) {
@@ -50,7 +50,7 @@ module.exports = async function handleAusencias(interaction) {
           { name: '🕒 Duração', value: duracao, inline: true },
           { name: '⏰ Data/Hora', value: new Date().toLocaleString('pt-BR'), inline: false },
         ],
-        footer: "Sistema de Logs Benny's",
+        footer: "Sistema de Logs Versalhes",
       });
       await canalLogsAusencias.send({ embeds: [embedLogsAusencias] });
     } catch (error) {
