@@ -517,13 +517,13 @@ module.exports = {
           case "registro":
             // Verificar se o usuário já tem o cargo de Membro Benny's
             const cargoMembro = interaction.guild.roles.cache.find(
-              (role) => role.name === "🧰 | Membro Benny's"
+              (role) => role.name === "🧰 | Membro Versalhes"
             );
 
             if (!cargoMembro) {
               await interaction.reply({
                 content:
-                  "❌ Erro: Cargo '🧰 | Membro Benny's' não encontrado no servidor!",
+                  "❌ Erro: Cargo '🧰 | Membro Versalhes' não encontrado no servidor!",
                 flags: MessageFlags.Ephemeral,
               });
               return;
@@ -536,7 +536,7 @@ module.exports = {
             if (usuarioTemCargo) {
               await interaction.reply({
                 content:
-                  "❌ Você já possui o cargo de 🧰 | Membro Benny's e não pode se registrar novamente!",
+                  "❌ Você já possui o cargo de 🧰 | Membro Versalhes e não pode se registrar novamente!",
                 flags: MessageFlags.Ephemeral,
               });
               return;
