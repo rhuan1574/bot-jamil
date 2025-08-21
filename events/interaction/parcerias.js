@@ -60,4 +60,4 @@ module.exports = async function handleParcerias(interaction) {
     content: `✅ **Parceria registrada com sucesso!**\n\n🤝 A nova parceria foi registrada no sistema.\n\n**Dados da parceria:**\n🤝 **Organização/FAC:** ${nomeOrganizacao}\n🤝 **Dono da Organização/FAC:** ${nomeDono}\n📍 **Localização:** ${localizacao}\n📦 **Produto/Serviço:** ${produto}\n👤 **Contato Principal:** ${contato}\n⏰ **Data/Hora:** ${new Date().toLocaleString('pt-BR')}\n\n**Registrado por:** ${interaction.user} (🧰 | Lider)`,
     flags: 64,
   });
-} 
+}

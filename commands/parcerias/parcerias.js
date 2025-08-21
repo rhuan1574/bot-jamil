@@ -3,13 +3,13 @@ const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder,  Embe
 module.exports = {
     data: new SlashCommandBuilder()
     .setName("parcerias")
-    .setDescription("Comando para ver as parcerias da Benny's")
+    .setDescription("Comando para ver as parcerias da Versalhes")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     async execute(interaction) {
         const embed = new EmbedBuilder()
-        .setTitle("Parcerias da Benny's")
-        .setDescription("Clique no botão abaixo para ver as parcerias da Benny's")
+        .setTitle("Parcerias da Versalhes")
+        .setDescription("Clique no botão abaixo para ver as parcerias da Versalhes")
         .setColor("Aqua")
 
         const button = new ButtonBuilder()
