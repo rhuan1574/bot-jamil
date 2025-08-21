@@ -49,3 +49,17 @@ for (const file of eventFiles) {
 client.login(process.env.DISCORD_TOKEN)
     .then(() => console.log('Login iniciado...'))
     .catch(error => console.error('❌ Erro ao fazer login:', error));
+
+client.on('guildMemberAdd', member => {
+  // Código a ser executado quando um usuário entra no servidor
+  console.log(`${member.user.tag} entrou no servidor.`);
+  // Exemplo: Enviar uma mensagem de boas-vindas
+  member.guild.channels.cache.get('1386010443868541041').send(`${member.user.tag} acabou de entrar no servidor!`);
+});
+
+client.on('guildMemberRemove', member => {
+  // Código a ser executado quando um usuário sai do servidor
+  console.log(`${member.user.tag} saiu do servidor.`);
+  // Exemplo: Enviar uma mensagem de despedida
+  member.guild.channels.cache.get('1386010443868541042').send(`${member.user.tag} saiu do servidor.`);
+});
