@@ -25,7 +25,7 @@ module.exports = async function handleParcerias(interaction) {
           { name: '🤝 Dono da Organização/FAC', value: nomeDono, inline: true },
           { name: '⏰ Data/Hora', value: new Date().toLocaleString('pt-BR'), inline: false },
         ],
-        footer: "Sistema de Parcerias Benny's",
+        footer: "Sistema de Parcerias Versalhes",
       });
       // Criar botão de remoção
       const removeButton = new ButtonBuilder()
