@@ -1789,7 +1789,7 @@ module.exports = {
             if (canalChatGeral) {
               try {
                 await canalChatGeral.send({
-                  content: `👋 Um(a) novo(a) integrante chegou! Bem-vindo(a), ${interaction.user}, à família Benny's! @everyone`,
+                  content: `👋 Um(a) novo(a) integrante chegou! Bem-vindo(a), ${interaction.user}, à família Versalhes! @everyone`,
                 });
               } catch (error) {
                 console.error("Erro ao enviar mensagem de boas-vindas:", error);
