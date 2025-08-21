@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -50,22 +50,4 @@ client.login(process.env.DISCORD_TOKEN)
     .then(() => console.log('Login iniciado...'))
     .catch(error => console.error('❌ Erro ao fazer login:', error));
 
-client.on('guildMemberAdd', member => {
-  // Código a ser executado quando um usuário entra no servidor
-  console.log(`${member.user.tag} entrou no servidor.`);
-  const welcomeEmbed = new EmbedBuilder()
-    .setColor('#0099ff')
-    .setTitle('Bem-vindo!')
-    .setDescription(`Olá ${member.user.tag}, bem-vindo ao servidor!`)
-    .setThumbnail(member.user.displayAvatarURL())
-    .setTimestamp();
-  // Exemplo: Enviar uma mensagem de boas-vindas
-  member.guild.channels.cache.get('1386010443868541041').send(`${member.user.tag} entrou no servidor!`, { embeds: [welcomeEmbed] });
-});
-
-client.on('guildMemberRemove', member => {
-  // Código a ser executado quando um usuário sai do servidor
-  console.log(`${member.user.tag} saiu do servidor.`);
-  // Exemplo: Enviar uma mensagem de despedida
-  member.guild.channels.cache.get('1386010443868541042').send(`${member.user.tag} saiu do servidor.`);
-});
+ 
