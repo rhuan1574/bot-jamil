@@ -468,29 +468,39 @@ module.exports = {
                 .setTitle("📝 Registro de Itens do Farm");
               const inputs = [
                 {
-                  id: "plastico",
-                  label: "Quantidade de Plástico",
-                  placeholder: "Digite a quantidade de Plástico",
+                  id: "eter",
+                  label: "Quantidade de Éter",
+                  placeholder: "Digite a quantidade de Éter",
                 },
                 {
-                  id: "borracha",
-                  label: "Quantidade de Borracha",
-                  placeholder: "Digite a quantidade de Borracha",
+                  id: "efedrina",
+                  label: "Quantidade de Efedrina",
+                  placeholder: "Digite a quantidade de Efedrina",
                 },
                 {
-                  id: "ferro",
-                  label: "Quantidade de Ferro",
-                  placeholder: "Digite a quantidade de Ferro",
+                  id: "agulha",
+                  label: "Quantidade de Agulha",
+                  placeholder: "Digite a quantidade de Agulha",
                 },
                 {
-                  id: "aluminio",
-                  label: "Quantidade de Aluminio",
-                  placeholder: "Digite a quantidade de Aluminio",
+                  id: "seringa",
+                  label: "Quantidade de Seringa",
+                  placeholder: "Digite a quantidade de Seringa",
                 },
                 {
-                  id: "cobre",
-                  label: "Quantidade de Cobre",
-                  placeholder: "Digite a quantidade de Cobre",
+                  id: "folha",
+                  label: "Quantidade de Folha",
+                  placeholder: "Digite a quantidade de Folha",
+                },
+                {
+                  id: "folha",
+                  label: "Quantidade de Folha",
+                  placeholder: "Digite a quantidade de Folha",
+                },
+                {
+                  id: "opio",
+                  label: "Quantidade de Ópio",
+                  placeholder: "Digite a quantidade de Ópio",
                 },
               ].map((input) =>
                 new TextInputBuilder()
