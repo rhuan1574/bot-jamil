@@ -77,11 +77,12 @@ const handleComprovanteFarm = async (
       `O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`
     )
     .addFields(
-      { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
-      { name: "🍃 Borracha", value: `${player.borracha}/${metas.borracha}` },
-      { name: "🍃 Cobre", value: `${player.cobre}/${metas.cobre}` },
-      { name: "🍃 Ferro", value: `${player.ferro}/${metas.ferro}` },
-      { name: "🌱 Aluminio", value: `${player.aluminio}/${metas.aluminio}` }
+      { name: "🧪 Éter", value: `${player.eter}/${metas.eter}` },
+      { name: "⚗️ Efedrina", value: `${player.efedrina}/${metas.efedrina}` },
+      { name: "🩸 Agulha", value: `${player.agulha}/${metas.agulha}` },
+      { name: "💉 Seringa", value: `${player.seringa}/${metas.seringa}` },
+      { name: "🌱 Folha", value: `${player.folha}/${metas.folha}` },
+      { name: "💊 Ópio", value: `${player.opio}/${metas.opio}` }
     )
     .setImage(`attachment://${attachment.name}`)
     .setColor("#00FF00")
