@@ -7,11 +7,11 @@ module.exports = {
         .setDescription("Registra um novo farm no sistema")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
-        const attachment = new AttachmentBuilder("./images/bennys.png");
+        const attachment = new AttachmentBuilder("./images/versalhes.png");
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle("📝 Registro de FARM")
-            .setImage("attachment://bennys.png")
+            .setImage("attachment://versalhes.png")
             .setDescription("Para registrar sua farm, selecione o método de pagamento preferido abaixo.")
             .addFields(
                 { name: "💡 Informações", value: "Após selecionar o método de pagamento, você receberá instruções detalhadas para completar o registro." },
