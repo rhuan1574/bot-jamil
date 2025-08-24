@@ -77,12 +77,11 @@ const handleComprovanteFarm = async (
       `O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`
     )
     .addFields(
-      { name: "🧪 Éter", value: `${player.eter}/${metas.eter}` },
-      { name: "⚗️ Efedrina", value: `${player.efedrina}/${metas.efedrina}` },
-      { name: "🩸 Agulha", value: `${player.agulha}/${metas.agulha}` },
-      { name: "💉 Seringa", value: `${player.seringa}/${metas.seringa}` },
-      { name: "🌱 Folha", value: `${player.folha}/${metas.folha}` },
-      { name: "💊 Ópio", value: `${player.opio}/${metas.opio}` }
+      { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
+      { name: "🍃 Borracha", value: `${player.borracha}/${metas.borracha}` },
+      { name: "🍃 Ferro", value: `${player.ferro}/${metas.ferro}` },
+      { name: "🌱 Alumínio", value: `${player.aluminio}/${metas.aluminio}` },
+      { name: "🍃 Cobre", value: `${player.cobre}/${metas.cobre}` }
     )
     .setImage(`attachment://${attachment.name}`)
     .setColor("#00FF00")
@@ -466,6 +465,7 @@ module.exports = {
               const modalFarm = new ModalBuilder()
                 .setCustomId("modal-farm")
                 .setTitle("📝 Registro de Itens do Farm");
+              
               const inputs = [
                 {
                   id: "eter",
@@ -517,10 +517,12 @@ module.exports = {
                   .setStyle(TextInputStyle.Short)
                   .setRequired(true)
               );
-              modalFarm2.addComponents(
-                inputs2.map((input) => new ActionRowBuilder().addComponents(input))
+              
+              modalFarm.addComponents(
+                inputs.map((input) => new ActionRowBuilder().addComponents(input))
               );
-              await interaction.showModal(modalFarm2);
+              
+              await interaction.showModal(modalFarm);
             } catch (modalError) {
               console.error("Erro ao mostrar modal farm:", modalError);
               if (!interaction.replied && !interaction.deferred) {
@@ -1485,24 +1487,28 @@ module.exports = {
 
             break;
           case "modal-farm":
-            const eter = parseInt(
-              interaction.fields.getTextInputValue("eter")
+            const plastico = parseInt(
+              interaction.fields.getTextInputValue("plastico")
             );
-            const efedrina = parseInt(
-              interaction.fields.getTextInputValue("efedrina")
+            const ferro = parseInt(
+              interaction.fields.getTextInputValue("ferro")
             );
-            const opio = parseInt(
-              interaction.fields.getTextInputValue("opio")
+            const cobre = parseInt(
+              interaction.fields.getTextInputValue("cobre")
             );
-            const folha = parseInt(
-              interaction.fields.getTextInputValue("folha")
+            const aluminio = parseInt(
+              interaction.fields.getTextInputValue("aluminio")
+            );
+            const borracha = parseInt(
+              interaction.fields.getTextInputValue("borracha")
             );
 
             if (
-              isNaN(eter) ||
-              isNaN(efedrina) ||
-              isNaN(opio) ||
-              isNaN(folha)
+              isNaN(plastico) ||
+              isNaN(ferro) ||
+              isNaN(cobre) ||
+              isNaN(aluminio) ||
+              isNaN(borracha)
             ) {
               await interaction.reply({
                 content:
@@ -1706,25 +1712,7 @@ module.exports = {
 
             break;
 
-          case "modal-farm2":
-            const agulha = parseInt(
-              interaction.fields.getTextInputValue("agulha")
-            );
-            const seringa = parseInt(
-              interaction.fields.getTextInputValue("seringa")
-            );
-            if (
-              isNaN(agulha) ||
-              isNaN(seringa)
-            ) {
-              await interaction.reply({
-                content:
-                  "❌ Valores inválidos! Por favor, digite números para todas as quantidades.",
-                ephemeral: true,
-              });
-              return;
-            }
-          case "registro": {
+          case "registro":
             await interaction.deferReply({ flags: 64 });
 
             const nomeGame = interaction.fields.getTextInputValue("nome-game");
@@ -1854,7 +1842,6 @@ module.exports = {
               );
             }
             break;
-          }
           case "modal-parcerias":
             await handleParcerias(interaction);
             break;
