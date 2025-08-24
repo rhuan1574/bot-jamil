@@ -1494,12 +1494,6 @@ module.exports = {
             const opio = parseInt(
               interaction.fields.getTextInputValue("opio")
             );
-            const agulha = parseInt(
-              interaction.fields.getTextInputValue("agulha")
-            );
-            const seringa = parseInt(
-              interaction.fields.getTextInputValue("seringa")
-            );
             const folha = parseInt(
               interaction.fields.getTextInputValue("folha")
             );
@@ -1508,8 +1502,6 @@ module.exports = {
               isNaN(eter) ||
               isNaN(efedrina) ||
               isNaN(opio) ||
-              isNaN(agulha) ||
-              isNaN(seringa) ||
               isNaN(folha)
             ) {
               await interaction.reply({
@@ -1714,6 +1706,32 @@ module.exports = {
 
             break;
 
+          case "modal-farm2":
+            const eter2 = parseInt(
+              interaction.fields.getTextInputValue("eter")
+            );
+            const efedrina2 = parseInt(
+              interaction.fields.getTextInputValue("efedrina")
+            );
+            const opio2 = parseInt(
+              interaction.fields.getTextInputValue("opio")
+            );
+            const folha2 = parseInt(
+              interaction.fields.getTextInputValue("folha")
+            );
+            if (
+              isNaN(eter2) ||
+              isNaN(efedrina2) ||
+              isNaN(opio2) ||
+              isNaN(folha2)
+            ) {
+              await interaction.reply({
+                content:
+                  "❌ Valores inválidos! Por favor, digite números para todas as quantidades.",
+                ephemeral: true,
+              });
+              return;
+            }
           case "registro": {
             await interaction.deferReply({ flags: 64 });
 
