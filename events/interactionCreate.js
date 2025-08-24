@@ -478,21 +478,6 @@ module.exports = {
                   placeholder: "Digite a quantidade de Efedrina",
                 },
                 {
-                  id: "agulha",
-                  label: "Quantidade de Agulha",
-                  placeholder: "Digite a quantidade de Agulha",
-                },
-                {
-                  id: "seringa",
-                  label: "Quantidade de Seringa",
-                  placeholder: "Digite a quantidade de Seringa",
-                },
-                {
-                  id: "folha",
-                  label: "Quantidade de Folha",
-                  placeholder: "Digite a quantidade de Folha",
-                },
-                {
                   id: "opio",
                   label: "Quantidade de Ópio",
                   placeholder: "Digite a quantidade de Ópio",
@@ -509,6 +494,33 @@ module.exports = {
                 inputs.map((input) => new ActionRowBuilder().addComponents(input))
               );
               await interaction.showModal(modalFarm);
+
+              const modalFarm2 = new ModalBuilder()
+                .setCustomId("modal-farm2")
+                .setTitle("📝 Registro de Itens do Farm");
+              const inputs2 = [
+                {
+                  id: "agulha",
+                  label: "Quantidade de Agulha",
+                  placeholder: "Digite a quantidade de Agulha",
+                },
+                {
+                  id: "seringa",
+                  label: "Quantidade de Seringa",
+                  placeholder: "Digite a quantidade de Seringa",
+                }
+              ].map((input) =>
+                new TextInputBuilder()
+                  .setCustomId(input.id)
+                  .setLabel(input.label)
+                  .setPlaceholder(input.placeholder)
+                  .setStyle(TextInputStyle.Short)
+                  .setRequired(true)
+              );
+              modalFarm2.addComponents(
+                inputs2.map((input) => new ActionRowBuilder().addComponents(input))
+              );
+              await interaction.showModal(modalFarm2);
             } catch (modalError) {
               console.error("Erro ao mostrar modal farm:", modalError);
               if (!interaction.replied && !interaction.deferred) {
