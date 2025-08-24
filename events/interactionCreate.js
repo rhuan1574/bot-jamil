@@ -77,11 +77,12 @@ const handleComprovanteFarm = async (
       `O membro <@${interaction.user.id}> atingiu todas as metas diárias! Os valores serão resetados à meia-noite.`
     )
     .addFields(
-      { name: "🧪 Plástico", value: `${player.plastico}/${metas.plastico}` },
-      { name: "🍃 Borracha", value: `${player.borracha}/${metas.borracha}` },
-      { name: "🍃 Cobre", value: `${player.cobre}/${metas.cobre}` },
-      { name: "🍃 Ferro", value: `${player.ferro}/${metas.ferro}` },
-      { name: "🌱 Aluminio", value: `${player.aluminio}/${metas.aluminio}` }
+      { name: "🧪 Éter", value: `${player.eter}/${metas.eter}` },
+      { name: "⚗️ Efedrina", value: `${player.efedrina}/${metas.efedrina}` },
+      { name: "🩸 Agulha", value: `${player.agulha}/${metas.agulha}` },
+      { name: "💉 Seringa", value: `${player.seringa}/${metas.seringa}` },
+      { name: "🌱 Folha", value: `${player.folha}/${metas.folha}` },
+      { name: "💊 Ópio", value: `${player.opio}/${metas.opio}` }
     )
     .setImage(`attachment://${attachment.name}`)
     .setColor("#00FF00")
@@ -467,29 +468,39 @@ module.exports = {
                 .setTitle("📝 Registro de Itens do Farm");
               const inputs = [
                 {
-                  id: "plastico",
-                  label: "Quantidade de Plástico",
-                  placeholder: "Digite a quantidade de Plástico",
+                  id: "eter",
+                  label: "Quantidade de Éter",
+                  placeholder: "Digite a quantidade de Éter",
                 },
                 {
-                  id: "borracha",
-                  label: "Quantidade de Borracha",
-                  placeholder: "Digite a quantidade de Borracha",
+                  id: "efedrina",
+                  label: "Quantidade de Efedrina",
+                  placeholder: "Digite a quantidade de Efedrina",
                 },
                 {
-                  id: "ferro",
-                  label: "Quantidade de Ferro",
-                  placeholder: "Digite a quantidade de Ferro",
+                  id: "agulha",
+                  label: "Quantidade de Agulha",
+                  placeholder: "Digite a quantidade de Agulha",
                 },
                 {
-                  id: "aluminio",
-                  label: "Quantidade de Aluminio",
-                  placeholder: "Digite a quantidade de Aluminio",
+                  id: "seringa",
+                  label: "Quantidade de Seringa",
+                  placeholder: "Digite a quantidade de Seringa",
                 },
                 {
-                  id: "cobre",
-                  label: "Quantidade de Cobre",
-                  placeholder: "Digite a quantidade de Cobre",
+                  id: "folha",
+                  label: "Quantidade de Folha",
+                  placeholder: "Digite a quantidade de Folha",
+                },
+                {
+                  id: "folha",
+                  label: "Quantidade de Folha",
+                  placeholder: "Digite a quantidade de Folha",
+                },
+                {
+                  id: "opio",
+                  label: "Quantidade de Ópio",
+                  placeholder: "Digite a quantidade de Ópio",
                 },
               ].map((input) =>
                 new TextInputBuilder()
