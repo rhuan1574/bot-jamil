@@ -493,11 +493,6 @@ module.exports = {
                   placeholder: "Digite a quantidade de Folha",
                 },
                 {
-                  id: "folha",
-                  label: "Quantidade de Folha",
-                  placeholder: "Digite a quantidade de Folha",
-                },
-                {
                   id: "opio",
                   label: "Quantidade de Ópio",
                   placeholder: "Digite a quantidade de Ópio",
