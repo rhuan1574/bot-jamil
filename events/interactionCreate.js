@@ -1485,28 +1485,32 @@ module.exports = {
 
             break;
           case "modal-farm":
-            const plastico = parseInt(
-              interaction.fields.getTextInputValue("plastico")
+            const eter = parseInt(
+              interaction.fields.getTextInputValue("eter")
             );
-            const borracha = parseInt(
-              interaction.fields.getTextInputValue("borracha")
+            const efedrina = parseInt(
+              interaction.fields.getTextInputValue("efedrina")
             );
-            const ferro = parseInt(
-              interaction.fields.getTextInputValue("ferro")
+            const opio = parseInt(
+              interaction.fields.getTextInputValue("opio")
             );
-            const aluminio = parseInt(
-              interaction.fields.getTextInputValue("aluminio")
+            const agulha = parseInt(
+              interaction.fields.getTextInputValue("agulha")
             );
-            const cobre = parseInt(
-              interaction.fields.getTextInputValue("cobre")
+            const seringa = parseInt(
+              interaction.fields.getTextInputValue("seringa")
+            );
+            const folha = parseInt(
+              interaction.fields.getTextInputValue("folha")
             );
 
             if (
-              isNaN(plastico) ||
-              isNaN(borracha) ||
-              isNaN(ferro) ||
-              isNaN(aluminio) ||
-              isNaN(cobre)
+              isNaN(eter) ||
+              isNaN(efedrina) ||
+              isNaN(opio) ||
+              isNaN(agulha) ||
+              isNaN(seringa) ||
+              isNaN(folha)
             ) {
               await interaction.reply({
                 content:
