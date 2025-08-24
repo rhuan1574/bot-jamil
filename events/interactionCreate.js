@@ -1707,23 +1707,15 @@ module.exports = {
             break;
 
           case "modal-farm2":
-            const eter2 = parseInt(
-              interaction.fields.getTextInputValue("eter")
+            const agulha = parseInt(
+              interaction.fields.getTextInputValue("agulha")
             );
-            const efedrina2 = parseInt(
-              interaction.fields.getTextInputValue("efedrina")
-            );
-            const opio2 = parseInt(
-              interaction.fields.getTextInputValue("opio")
-            );
-            const folha2 = parseInt(
-              interaction.fields.getTextInputValue("folha")
+            const seringa = parseInt(
+              interaction.fields.getTextInputValue("seringa")
             );
             if (
-              isNaN(eter2) ||
-              isNaN(efedrina2) ||
-              isNaN(opio2) ||
-              isNaN(folha2)
+              isNaN(agulha) ||
+              isNaN(seringa)
             ) {
               await interaction.reply({
                 content:
