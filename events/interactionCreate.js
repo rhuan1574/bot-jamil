@@ -482,6 +482,16 @@ module.exports = {
                   label: "Quantidade de Ópio",
                   placeholder: "Digite a quantidade de Ópio",
                 },
+                {
+                  id: "folha",
+                  label: "Quantidade de Folha",
+                  placeholder: "Digite a quantidade de Folha",
+                },
+                {
+                  id: "seringa",
+                  label: "Quantidade de Seringa",
+                  placeholder: "Digite a quantidade de Seringa",
+                },
               ].map((input) =>
                 new TextInputBuilder()
                   .setCustomId(input.id)
@@ -1458,28 +1468,28 @@ module.exports = {
 
             break;
           case "modal-farm":
-            const plastico = parseInt(
-              interaction.fields.getTextInputValue("plastico")
+            const eter = parseInt(
+              interaction.fields.getTextInputValue("eter")
             );
-            const ferro = parseInt(
-              interaction.fields.getTextInputValue("ferro")
+            const efedrina = parseInt(
+              interaction.fields.getTextInputValue("efedrina")
             );
-            const cobre = parseInt(
-              interaction.fields.getTextInputValue("cobre")
+            const opio = parseInt(
+              interaction.fields.getTextInputValue("opio")
             );
-            const aluminio = parseInt(
-              interaction.fields.getTextInputValue("aluminio")
+            const folha = parseInt(
+              interaction.fields.getTextInputValue("folha")
             );
-            const borracha = parseInt(
-              interaction.fields.getTextInputValue("borracha")
+            const seringa = parseInt(
+              interaction.fields.getTextInputValue("seringa")
             );
 
             if (
-              isNaN(plastico) ||
-              isNaN(ferro) ||
-              isNaN(cobre) ||
-              isNaN(aluminio) ||
-              isNaN(borracha)
+              isNaN(eter) ||
+              isNaN(efedrina) ||
+              isNaN(opio) ||
+              isNaN(folha) ||
+              isNaN(seringa)
             ) {
               await interaction.reply({
                 content:
